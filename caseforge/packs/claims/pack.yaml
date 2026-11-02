@@ -1,0 +1,50 @@
+# Insurance claims triage. An entire industry pack with no Python.
+name: claims
+title: Insurance claim triage
+baseline_manual_minutes: 40        # ASSUMPTION: replace with measured adjuster time
+id_field: claim_id
+entity_field: policy_id
+time_field: ts
+sources:
+  records:  {file: claims.csv}
+  entities: {file: policies.csv, key: policy_id}
+subjects:
+  field: flagged
+  equals: "1"
+  label: "{policy_id} · {description} · {amount}"
+lookup_fields: [policy_id, provider_id, bank_account, state]
+policy_keywords: suspicious claim payout fraud indicators
+second_opinion_question: Do these facts describe a fraudulent or inflated insurance claim?
+signals:
+  - {name: abnormal_amount, type: zscore, field: amount, source: claim_history,
+     tiers: [{z: 4, weight: 30}, {z: 2, weight: 15}],
+     detail: "Claim amount {value} vs this policy's average {mean} (z={z}).",
+     keywords: "abnormal claim amount average verification"}
+  - {name: high_value, type: threshold, field: amount, op: ">=", value: 25000, weight: 10, source: claim_history,
+     detail: "Claim amount {value} is above the 25,000 senior-review limit.", keywords: "high value claim senior review limit"}
+  - {name: new_provider, type: new_value, field: provider_id, weight: 20, source: provider_signals,
+     detail: "Provider {value} has never billed this policy before.", keywords: "new provider never billed unknown provider"}
+  - {name: out_of_state, type: differs_from_entity, field: state, entity_field: home_state, weight: 10, source: geo_signals,
+     detail: "Claim from {value}, policy home state is {entity_value}.", keywords: "out of state claim home state"}
+  - {name: claim_burst, type: count_window, minutes: 180, min_count: 2, weight: 15, source: claim_history,
+     detail: "{count} other claims on this policy in the previous 3 hours.", keywords: "burst multiple claims short period"}
+  - {name: shared_bank_account, type: shared_across, field: bank_account, group: policy_id, min_groups: 3, weight: 20,
+     source: identity_signals, detail: "Payout account {value} is used by {groups} different policies.",
+     keywords: "shared payout bank account several policies fraud ring"}
+  - {name: night_filing, type: time_of_day, start: 0, end: 5, weight: 5, source: claim_history,
+     detail: "Claim filed at {hour}, outside normal hours."}
+actions:
+  - {min: 70, action: "Refer to special investigations unit and hold payout"}
+  - {min: 40, action: "Escalate to senior adjuster for documentation review"}
+  - {min: 0,  action: "Fast-track payout through standard process"}
+artifacts:
+  - name: claimant_message_draft
+    bands:
+      - {min: 70, template: "Dear {entity_holder}, claim {subject_id} needs additional verification before any payment. A specialist will contact you."}
+      - {min: 40, template: "Dear {entity_holder}, we need supporting documents for claim {subject_id} ({description}). Please upload them within 10 days."}
+      - {min: 0,  template: "Dear {entity_holder}, claim {subject_id} ({description}) has been cleared for standard payment processing."}
+scenarios:
+  - {subject: CLM-9001, expect: high, why: "burst of claims, new provider, shared payout account"}
+  - {subject: CLM-9003, expect: mid,  why: "high value but known provider and home state"}
+  - {subject: CLM-9002, expect: low,  why: "routine repair"}
+untrusted_fields: [description]

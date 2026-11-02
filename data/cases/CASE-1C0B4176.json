@@ -1,0 +1,101 @@
+{
+  "case_id": "CASE-1C0B4176",
+  "domain": "claims",
+  "subject_id": "CLM-9002",
+  "status": "pending_approval",
+  "created_at": "2026-11-02T21:02:05.536087Z",
+  "risk_score": 0.0,
+  "recommended_action": "Fast-track payout through standard process",
+  "summary": "Case CLM-9002 scored 0/100. Key signals: none. Recommended action per section 'Escalation thresholds': Fast-track payout through standard process. Human approval required.",
+  "reasoning": [
+    "No risk signals triggered.",
+    "Policy basis: claims_policy.md / Escalation thresholds."
+  ],
+  "evidence": [
+    {
+      "source": "profile",
+      "signal": "profile",
+      "detail": "policy_id POL-102: 25 established prior records, 25 other records in total.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "claim_history",
+      "signal": "abnormal_amount",
+      "detail": "abnormal_amount: no signal.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "claim_history",
+      "signal": "high_value",
+      "detail": "high_value: no signal.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "provider_signals",
+      "signal": "new_provider",
+      "detail": "new_provider: no signal.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "geo_signals",
+      "signal": "out_of_state",
+      "detail": "out_of_state: no signal.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "claim_history",
+      "signal": "claim_burst",
+      "detail": "claim_burst: no signal.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "identity_signals",
+      "signal": "shared_bank_account",
+      "detail": "shared_bank_account: no signal.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "claim_history",
+      "signal": "night_filing",
+      "detail": "night_filing: no signal.",
+      "weight": 0.0,
+      "raw": {}
+    }
+  ],
+  "citations": [
+    {
+      "doc": "claims_policy.md",
+      "section": "Escalation thresholds",
+      "excerpt": "Risk score 70 or above: refer to special investigations and hold payout. Score 40 to 69: escalate to a senior adjuster. Score below 40: fast-track payout. Every recommendation requires human approval.",
+      "score": 1.369
+    },
+    {
+      "doc": "claims_policy.md",
+      "section": "Shared payout bank account",
+      "excerpt": "A payout account linked to three or more unrelated policies indicates a possible fraud ring. Hold payment and refer to the special investigations unit.",
+      "score": 0.979
+    },
+    {
+      "doc": "claims_policy.md",
+      "section": "Abnormal claim amount",
+      "excerpt": "A claim far above the policy's historical average requires documentation review. Amounts more than four standard deviations above average need an adjuster to verify invoices before payout.",
+      "score": 0.645
+    }
+  ],
+  "artifacts": {
+    "claimant_message_draft": "Dear Tom Reed, claim CLM-9002 (Windshield repair) has been cleared for standard payment processing."
+  },
+  "llm_used": false,
+  "guardrail_flags": [],
+  "second_opinion": null,
+  "agent_run": null,
+  "investigation_seconds": 2.26,
+  "decision": null
+}

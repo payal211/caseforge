@@ -1,0 +1,104 @@
+{
+  "case_id": "CASE-27912A0A",
+  "domain": "claims",
+  "subject_id": "CLM-9003",
+  "status": "pending_approval",
+  "created_at": "2026-11-02T21:02:03.278153Z",
+  "risk_score": 40.0,
+  "recommended_action": "Escalate to senior adjuster for documentation review",
+  "summary": "Case CLM-9003 scored 40/100. Key signals: Claim amount 30000.0 vs this policy's average 2,353 (z=23.4); Claim amount 30000.0 is above the 25,000 senior-review limit. Recommended action per section 'High value claim senior review limit': Escalate to senior adjuster for documentation review. Human approval required.",
+  "reasoning": [
+    "abnormal_amount: Claim amount 30000.0 vs this policy's average 2,353 (z=23.4). (+30)",
+    "high_value: Claim amount 30000.0 is above the 25,000 senior-review limit. (+10)",
+    "Policy basis: claims_policy.md / High value claim senior review limit."
+  ],
+  "evidence": [
+    {
+      "source": "profile",
+      "signal": "profile",
+      "detail": "policy_id POL-103: 25 established prior records, 25 other records in total.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "claim_history",
+      "signal": "abnormal_amount",
+      "detail": "Claim amount 30000.0 vs this policy's average 2,353 (z=23.4).",
+      "weight": 30.0,
+      "raw": {
+        "z": 23.36
+      }
+    },
+    {
+      "source": "claim_history",
+      "signal": "high_value",
+      "detail": "Claim amount 30000.0 is above the 25,000 senior-review limit.",
+      "weight": 10.0,
+      "raw": {}
+    },
+    {
+      "source": "provider_signals",
+      "signal": "new_provider",
+      "detail": "new_provider: no signal.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "geo_signals",
+      "signal": "out_of_state",
+      "detail": "out_of_state: no signal.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "claim_history",
+      "signal": "claim_burst",
+      "detail": "claim_burst: no signal.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "identity_signals",
+      "signal": "shared_bank_account",
+      "detail": "shared_bank_account: no signal.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "claim_history",
+      "signal": "night_filing",
+      "detail": "night_filing: no signal.",
+      "weight": 0.0,
+      "raw": {}
+    }
+  ],
+  "citations": [
+    {
+      "doc": "claims_policy.md",
+      "section": "High value claim senior review limit",
+      "excerpt": "Any claim of 25,000 or more must be reviewed by a senior adjuster regardless of other signals.",
+      "score": 4.205
+    },
+    {
+      "doc": "claims_policy.md",
+      "section": "Abnormal claim amount",
+      "excerpt": "A claim far above the policy's historical average requires documentation review. Amounts more than four standard deviations above average need an adjuster to verify invoices before payout.",
+      "score": 3.419
+    },
+    {
+      "doc": "claims_policy.md",
+      "section": "Out of state claim",
+      "excerpt": "A claim filed from a state different from the policy home state needs location verification, unless the policy has travel cover.",
+      "score": 1.976
+    }
+  ],
+  "artifacts": {
+    "claimant_message_draft": "Dear Lena Fox, we need supporting documents for claim CLM-9003 (Roof leak repair). Please upload them within 10 days."
+  },
+  "llm_used": false,
+  "guardrail_flags": [],
+  "second_opinion": null,
+  "agent_run": null,
+  "investigation_seconds": 2.25,
+  "decision": null
+}

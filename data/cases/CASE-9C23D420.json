@@ -1,0 +1,65 @@
+{
+  "case_id": "CASE-9C23D420",
+  "domain": "manufacturing",
+  "subject_id": "PUMP-03",
+  "status": "pending_approval",
+  "created_at": "2026-11-02T21:02:12.327534Z",
+  "risk_score": 0.0,
+  "recommended_action": "No action: continue monitoring",
+  "summary": "Machine PUMP-03 scored 0/100. No drift detected. Recommended action: No action: continue monitoring. Human approval required.",
+  "reasoning": [
+    "All sensor channels within baseline.",
+    "Manual basis: rotating_equipment_manual.md / General inspection."
+  ],
+  "evidence": [
+    {
+      "source": "sensor_logs",
+      "signal": "vibration_mm_s_stable",
+      "detail": "vibration_mm_s within baseline (z=-0.1).",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "sensor_logs",
+      "signal": "temp_c_stable",
+      "detail": "temp_c within baseline (z=-0.1).",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "sensor_logs",
+      "signal": "pressure_bar_stable",
+      "detail": "pressure_bar within baseline (z=+0.4).",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "sensor_logs",
+      "signal": "current_a_stable",
+      "detail": "current_a within baseline (z=+0.5).",
+      "weight": 0.0,
+      "raw": {}
+    }
+  ],
+  "citations": [
+    {
+      "doc": "rotating_equipment_manual.md",
+      "section": "General inspection",
+      "excerpt": "If drift cannot be classified, schedule a visual inspection and vibration spectrum analysis at the next planned stop.\nStep: Visual inspection and vibration spectrum capture\nEstimated downtime: 1 hours",
+      "score": 1.571
+    },
+    {
+      "doc": "rotating_equipment_manual.md",
+      "section": "Bearing wear",
+      "excerpt": "Symptoms: vibration and bearing temperature drift upward together. Vibration above 4.5 mm/s indicates advanced wear. Typical root causes are lubrication breakdown, misalignment or contamination. Plan corrective maintenance within 48 hours.\nStep: Isolate and lock out the machine\nStep: Inspect the bearing housing and take a grease sample\nStep: Replace drive-end and non-drive-end bearings\nStep: Realign the coupling and re-lubricate\nPart: BRG-6205-2RS | Deep groove ball bearing | qty 2\nPart: GRS-EP2-400 | EP2 bearing grease cartridge | qty 1\nEstimated downtime: 6 hours",
+      "score": 0.137
+    }
+  ],
+  "artifacts": {},
+  "llm_used": false,
+  "guardrail_flags": [],
+  "second_opinion": null,
+  "agent_run": null,
+  "investigation_seconds": 2.24,
+  "decision": null
+}

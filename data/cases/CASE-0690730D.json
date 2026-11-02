@@ -1,0 +1,101 @@
+{
+  "case_id": "CASE-0690730D",
+  "domain": "bfsi",
+  "subject_id": "TXN-9001",
+  "status": "pending_approval",
+  "created_at": "2026-11-02T21:02:01.024532Z",
+  "risk_score": 100.0,
+  "recommended_action": "Approve dispute as fraud: block card and refund customer",
+  "summary": "Transaction TXN-9001 scored 100/100. Key signals: Amount 185,000 vs customer average 2,298 (z=146.6); Device DEV-X77 never seen on this account; Transaction in SG (home IN); no prior activity there. Recommended action per policy section 'Device and identity signals': Approve dispute as fraud: block card and refund customer. Human approval required.",
+  "reasoning": [
+    "abnormal_amount: Amount 185,000 vs customer average 2,298 (z=146.6). (+30)",
+    "new_device: Device DEV-X77 never seen on this account. (+20)",
+    "foreign_geo: Transaction in SG (home IN); no prior activity there. (+20)",
+    "velocity: 1 other transactions in the prior hour, 1 micro-amount probe(s). (+10)",
+    "shared_device: Device DEV-X77 linked to 3 account(s). (+20)",
+    "off_hours: Transaction at 02:14, outside normal hours. (+5)",
+    "Policy basis: dispute_policy.md / Device and identity signals."
+  ],
+  "evidence": [
+    {
+      "source": "customer_profile",
+      "signal": "profile",
+      "detail": "Account ACC-1001 (Asha Verma), home country IN, 28 prior transactions.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "transaction_history",
+      "signal": "abnormal_amount",
+      "detail": "Amount 185,000 vs customer average 2,298 (z=146.6).",
+      "weight": 30.0,
+      "raw": {
+        "z": 146.56
+      }
+    },
+    {
+      "source": "device_signals",
+      "signal": "new_device",
+      "detail": "Device DEV-X77 never seen on this account.",
+      "weight": 20.0,
+      "raw": {}
+    },
+    {
+      "source": "geo_signals",
+      "signal": "foreign_geo",
+      "detail": "Transaction in SG (home IN); no prior activity there.",
+      "weight": 20.0,
+      "raw": {}
+    },
+    {
+      "source": "transaction_history",
+      "signal": "velocity",
+      "detail": "1 other transactions in the prior hour, 1 micro-amount probe(s).",
+      "weight": 10.0,
+      "raw": {}
+    },
+    {
+      "source": "identity_signals",
+      "signal": "shared_device",
+      "detail": "Device DEV-X77 linked to 3 account(s).",
+      "weight": 20.0,
+      "raw": {}
+    },
+    {
+      "source": "transaction_history",
+      "signal": "off_hours",
+      "detail": "Transaction at 02:14, outside normal hours.",
+      "weight": 5.0,
+      "raw": {}
+    }
+  ],
+  "citations": [
+    {
+      "doc": "dispute_policy.md",
+      "section": "Device and identity signals",
+      "excerpt": "A device never previously seen on the account is a strong risk signal. A device identifier linked to three or more accounts indicates a compromised or fraudulent device farm and must be escalated to the fraud intelligence team.",
+      "score": 6.534
+    },
+    {
+      "doc": "dispute_policy.md",
+      "section": "Cross-border transactions",
+      "excerpt": "A transaction in a country that differs from the customer's home country and has no prior history is high risk. If the customer has previous activity in that country on a known device, treat the transaction as lower risk and verify with the customer.",
+      "score": 5.059
+    },
+    {
+      "doc": "dispute_policy.md",
+      "section": "Card testing and velocity",
+      "excerpt": "Several small transactions within one hour, especially micro-amounts below 10 followed by a large purchase, indicate card testing. Treat card testing followed by a high-value purchase as probable fraud and block the card immediately.",
+      "score": 4.525
+    }
+  ],
+  "artifacts": {
+    "customer_notification_draft": "Dear Asha Verma, we have identified transaction TXN-9001 (185000.0 at ELECTRO-WORLD) as unauthorized. Your card will be blocked and reissued and the amount refunded within 10 business days."
+  },
+  "llm_used": false,
+  "guardrail_flags": [],
+  "second_opinion": null,
+  "agent_run": null,
+  "investigation_seconds": 2.26,
+  "decision": null
+}

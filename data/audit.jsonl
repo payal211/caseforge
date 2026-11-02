@@ -1,0 +1,90 @@
+{"ts": "2026-11-02T21:01:28.928844+00:00", "case_id": "CASE-940FABC1", "event": "investigation_started", "data": {"domain": "manufacturing", "subject_id": "COMP-02"}}
+{"ts": "2026-11-02T21:01:28.936290+00:00", "case_id": "CASE-940FABC1", "event": "agent:gather", "data": {"seconds": 0.003, "produced": ["evidence", "ctx"]}}
+{"ts": "2026-11-02T21:01:28.938144+00:00", "case_id": "CASE-940FABC1", "event": "agent:retrieve", "data": {"seconds": 0.0, "produced": ["citations"]}}
+{"ts": "2026-11-02T21:01:28.940859+00:00", "case_id": "CASE-940FABC1", "event": "agent:guard", "data": {"seconds": 0.001, "produced": ["evidence", "citations", "ctx", "flags"]}}
+{"ts": "2026-11-02T21:01:28.942629+00:00", "case_id": "CASE-940FABC1", "event": "agent:reason", "data": {"seconds": 0.0, "produced": ["analysis"]}}
+{"ts": "2026-11-02T21:01:28.944077+00:00", "case_id": "CASE-940FABC1", "event": "agent:second_opinion", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:01:28.945401+00:00", "case_id": "CASE-940FABC1", "event": "agent:agent_loop", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:01:31.638962+00:00", "case_id": "CASE-940FABC1", "event": "agent:draft", "data": {"seconds": 2.692, "produced": ["artifacts", "flags", "summary", "llm_used"]}}
+{"ts": "2026-11-02T21:01:31.641746+00:00", "case_id": "CASE-940FABC1", "event": "awaiting_human_approval", "data": {"recommended_action": "Raise an inspection work order for the next shift"}}
+{"ts": "2026-11-02T21:01:54.195084+00:00", "case_id": "CASE-66B26517", "event": "investigation_started", "data": {"domain": "bfsi", "subject_id": "TXN-9002"}}
+{"ts": "2026-11-02T21:01:54.198936+00:00", "case_id": "CASE-66B26517", "event": "agent:gather", "data": {"seconds": 0.001, "produced": ["evidence", "ctx"]}}
+{"ts": "2026-11-02T21:01:54.199648+00:00", "case_id": "CASE-66B26517", "event": "agent:retrieve", "data": {"seconds": 0.0, "produced": ["citations"]}}
+{"ts": "2026-11-02T21:01:54.200443+00:00", "case_id": "CASE-66B26517", "event": "agent:guard", "data": {"seconds": 0.0, "produced": ["evidence", "citations", "ctx", "flags"]}}
+{"ts": "2026-11-02T21:01:54.200988+00:00", "case_id": "CASE-66B26517", "event": "agent:reason", "data": {"seconds": 0.0, "produced": ["analysis"]}}
+{"ts": "2026-11-02T21:01:54.201780+00:00", "case_id": "CASE-66B26517", "event": "agent:second_opinion", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:01:54.202273+00:00", "case_id": "CASE-66B26517", "event": "agent:agent_loop", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:01:56.482262+00:00", "case_id": "CASE-66B26517", "event": "agent:draft", "data": {"seconds": 2.28, "produced": ["artifacts", "flags", "summary", "llm_used"]}}
+{"ts": "2026-11-02T21:01:56.484720+00:00", "case_id": "CASE-66B26517", "event": "awaiting_human_approval", "data": {"recommended_action": "Decline dispute as legitimate and refer customer to merchant dispute process"}}
+{"ts": "2026-11-02T21:01:56.486461+00:00", "case_id": "CASE-849622A4", "event": "investigation_started", "data": {"domain": "bfsi", "subject_id": "TXN-9003"}}
+{"ts": "2026-11-02T21:01:56.488674+00:00", "case_id": "CASE-849622A4", "event": "agent:gather", "data": {"seconds": 0.0, "produced": ["evidence", "ctx"]}}
+{"ts": "2026-11-02T21:01:56.489345+00:00", "case_id": "CASE-849622A4", "event": "agent:retrieve", "data": {"seconds": 0.0, "produced": ["citations"]}}
+{"ts": "2026-11-02T21:01:56.490095+00:00", "case_id": "CASE-849622A4", "event": "agent:guard", "data": {"seconds": 0.0, "produced": ["evidence", "citations", "ctx", "flags"]}}
+{"ts": "2026-11-02T21:01:56.490657+00:00", "case_id": "CASE-849622A4", "event": "agent:reason", "data": {"seconds": 0.0, "produced": ["analysis"]}}
+{"ts": "2026-11-02T21:01:56.491246+00:00", "case_id": "CASE-849622A4", "event": "agent:second_opinion", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:01:56.491830+00:00", "case_id": "CASE-849622A4", "event": "agent:agent_loop", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:01:58.752696+00:00", "case_id": "CASE-849622A4", "event": "agent:draft", "data": {"seconds": 2.26, "produced": ["artifacts", "flags", "summary", "llm_used"]}}
+{"ts": "2026-11-02T21:01:58.755428+00:00", "case_id": "CASE-849622A4", "event": "awaiting_human_approval", "data": {"recommended_action": "Escalate to senior analyst and request customer verification"}}
+{"ts": "2026-11-02T21:01:58.759387+00:00", "case_id": "CASE-0690730D", "event": "investigation_started", "data": {"domain": "bfsi", "subject_id": "TXN-9001"}}
+{"ts": "2026-11-02T21:01:58.761430+00:00", "case_id": "CASE-0690730D", "event": "agent:gather", "data": {"seconds": 0.0, "produced": ["evidence", "ctx"]}}
+{"ts": "2026-11-02T21:01:58.762104+00:00", "case_id": "CASE-0690730D", "event": "agent:retrieve", "data": {"seconds": 0.0, "produced": ["citations"]}}
+{"ts": "2026-11-02T21:01:58.763489+00:00", "case_id": "CASE-0690730D", "event": "agent:guard", "data": {"seconds": 0.0, "produced": ["evidence", "citations", "ctx", "flags"]}}
+{"ts": "2026-11-02T21:01:58.764353+00:00", "case_id": "CASE-0690730D", "event": "agent:reason", "data": {"seconds": 0.0, "produced": ["analysis"]}}
+{"ts": "2026-11-02T21:01:58.765114+00:00", "case_id": "CASE-0690730D", "event": "agent:second_opinion", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:01:58.765733+00:00", "case_id": "CASE-0690730D", "event": "agent:agent_loop", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:02:01.023305+00:00", "case_id": "CASE-0690730D", "event": "agent:draft", "data": {"seconds": 2.257, "produced": ["artifacts", "flags", "summary", "llm_used"]}}
+{"ts": "2026-11-02T21:02:01.024971+00:00", "case_id": "CASE-0690730D", "event": "awaiting_human_approval", "data": {"recommended_action": "Approve dispute as fraud: block card and refund customer"}}
+{"ts": "2026-11-02T21:02:01.028356+00:00", "case_id": "CASE-27912A0A", "event": "investigation_started", "data": {"domain": "claims", "subject_id": "CLM-9003"}}
+{"ts": "2026-11-02T21:02:01.030723+00:00", "case_id": "CASE-27912A0A", "event": "agent:gather", "data": {"seconds": 0.001, "produced": ["evidence", "ctx"]}}
+{"ts": "2026-11-02T21:02:01.031447+00:00", "case_id": "CASE-27912A0A", "event": "agent:retrieve", "data": {"seconds": 0.0, "produced": ["citations"]}}
+{"ts": "2026-11-02T21:02:01.032174+00:00", "case_id": "CASE-27912A0A", "event": "agent:guard", "data": {"seconds": 0.0, "produced": ["evidence", "citations", "ctx", "flags"]}}
+{"ts": "2026-11-02T21:02:01.032759+00:00", "case_id": "CASE-27912A0A", "event": "agent:reason", "data": {"seconds": 0.0, "produced": ["analysis"]}}
+{"ts": "2026-11-02T21:02:01.033296+00:00", "case_id": "CASE-27912A0A", "event": "agent:second_opinion", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:02:01.033894+00:00", "case_id": "CASE-27912A0A", "event": "agent:agent_loop", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:02:03.277027+00:00", "case_id": "CASE-27912A0A", "event": "agent:draft", "data": {"seconds": 2.243, "produced": ["artifacts", "flags", "summary", "llm_used"]}}
+{"ts": "2026-11-02T21:02:03.278587+00:00", "case_id": "CASE-27912A0A", "event": "awaiting_human_approval", "data": {"recommended_action": "Escalate to senior adjuster for documentation review"}}
+{"ts": "2026-11-02T21:02:03.279657+00:00", "case_id": "CASE-1C0B4176", "event": "investigation_started", "data": {"domain": "claims", "subject_id": "CLM-9002"}}
+{"ts": "2026-11-02T21:02:03.281742+00:00", "case_id": "CASE-1C0B4176", "event": "agent:gather", "data": {"seconds": 0.0, "produced": ["evidence", "ctx"]}}
+{"ts": "2026-11-02T21:02:03.282427+00:00", "case_id": "CASE-1C0B4176", "event": "agent:retrieve", "data": {"seconds": 0.0, "produced": ["citations"]}}
+{"ts": "2026-11-02T21:02:03.283543+00:00", "case_id": "CASE-1C0B4176", "event": "agent:guard", "data": {"seconds": 0.001, "produced": ["evidence", "citations", "ctx", "flags"]}}
+{"ts": "2026-11-02T21:02:03.284801+00:00", "case_id": "CASE-1C0B4176", "event": "agent:reason", "data": {"seconds": 0.0, "produced": ["analysis"]}}
+{"ts": "2026-11-02T21:02:03.285340+00:00", "case_id": "CASE-1C0B4176", "event": "agent:second_opinion", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:02:03.285850+00:00", "case_id": "CASE-1C0B4176", "event": "agent:agent_loop", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:02:05.534781+00:00", "case_id": "CASE-1C0B4176", "event": "agent:draft", "data": {"seconds": 2.248, "produced": ["artifacts", "flags", "summary", "llm_used"]}}
+{"ts": "2026-11-02T21:02:05.537149+00:00", "case_id": "CASE-1C0B4176", "event": "awaiting_human_approval", "data": {"recommended_action": "Fast-track payout through standard process"}}
+{"ts": "2026-11-02T21:02:05.539520+00:00", "case_id": "CASE-42CD75B8", "event": "investigation_started", "data": {"domain": "claims", "subject_id": "CLM-9001"}}
+{"ts": "2026-11-02T21:02:05.542421+00:00", "case_id": "CASE-42CD75B8", "event": "agent:gather", "data": {"seconds": 0.0, "produced": ["evidence", "ctx"]}}
+{"ts": "2026-11-02T21:02:05.543316+00:00", "case_id": "CASE-42CD75B8", "event": "agent:retrieve", "data": {"seconds": 0.0, "produced": ["citations"]}}
+{"ts": "2026-11-02T21:02:05.544307+00:00", "case_id": "CASE-42CD75B8", "event": "agent:guard", "data": {"seconds": 0.0, "produced": ["evidence", "citations", "ctx", "flags"]}}
+{"ts": "2026-11-02T21:02:05.545009+00:00", "case_id": "CASE-42CD75B8", "event": "agent:reason", "data": {"seconds": 0.0, "produced": ["analysis"]}}
+{"ts": "2026-11-02T21:02:05.545745+00:00", "case_id": "CASE-42CD75B8", "event": "agent:second_opinion", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:02:05.546409+00:00", "case_id": "CASE-42CD75B8", "event": "agent:agent_loop", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:02:07.806134+00:00", "case_id": "CASE-42CD75B8", "event": "agent:draft", "data": {"seconds": 2.259, "produced": ["artifacts", "flags", "summary", "llm_used"]}}
+{"ts": "2026-11-02T21:02:07.808484+00:00", "case_id": "CASE-42CD75B8", "event": "awaiting_human_approval", "data": {"recommended_action": "Refer to special investigations unit and hold payout"}}
+{"ts": "2026-11-02T21:02:07.835215+00:00", "case_id": "CASE-7ECBBC63", "event": "investigation_started", "data": {"domain": "manufacturing", "subject_id": "COMP-02"}}
+{"ts": "2026-11-02T21:02:07.840987+00:00", "case_id": "CASE-7ECBBC63", "event": "agent:gather", "data": {"seconds": 0.002, "produced": ["evidence", "ctx"]}}
+{"ts": "2026-11-02T21:02:07.841845+00:00", "case_id": "CASE-7ECBBC63", "event": "agent:retrieve", "data": {"seconds": 0.0, "produced": ["citations"]}}
+{"ts": "2026-11-02T21:02:07.842758+00:00", "case_id": "CASE-7ECBBC63", "event": "agent:guard", "data": {"seconds": 0.0, "produced": ["evidence", "citations", "ctx", "flags"]}}
+{"ts": "2026-11-02T21:02:07.843392+00:00", "case_id": "CASE-7ECBBC63", "event": "agent:reason", "data": {"seconds": 0.0, "produced": ["analysis"]}}
+{"ts": "2026-11-02T21:02:07.843925+00:00", "case_id": "CASE-7ECBBC63", "event": "agent:second_opinion", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:02:07.844414+00:00", "case_id": "CASE-7ECBBC63", "event": "agent:agent_loop", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:02:10.079680+00:00", "case_id": "CASE-7ECBBC63", "event": "agent:draft", "data": {"seconds": 2.235, "produced": ["artifacts", "flags", "summary", "llm_used"]}}
+{"ts": "2026-11-02T21:02:10.082027+00:00", "case_id": "CASE-7ECBBC63", "event": "awaiting_human_approval", "data": {"recommended_action": "Raise an inspection work order for the next shift"}}
+{"ts": "2026-11-02T21:02:10.087730+00:00", "case_id": "CASE-9C23D420", "event": "investigation_started", "data": {"domain": "manufacturing", "subject_id": "PUMP-03"}}
+{"ts": "2026-11-02T21:02:10.092654+00:00", "case_id": "CASE-9C23D420", "event": "agent:gather", "data": {"seconds": 0.002, "produced": ["evidence", "ctx"]}}
+{"ts": "2026-11-02T21:02:10.093706+00:00", "case_id": "CASE-9C23D420", "event": "agent:retrieve", "data": {"seconds": 0.0, "produced": ["citations"]}}
+{"ts": "2026-11-02T21:02:10.094755+00:00", "case_id": "CASE-9C23D420", "event": "agent:guard", "data": {"seconds": 0.0, "produced": ["evidence", "citations", "ctx", "flags"]}}
+{"ts": "2026-11-02T21:02:10.095504+00:00", "case_id": "CASE-9C23D420", "event": "agent:reason", "data": {"seconds": 0.0, "produced": ["analysis"]}}
+{"ts": "2026-11-02T21:02:10.096277+00:00", "case_id": "CASE-9C23D420", "event": "agent:second_opinion", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:02:10.096799+00:00", "case_id": "CASE-9C23D420", "event": "agent:agent_loop", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:02:12.326126+00:00", "case_id": "CASE-9C23D420", "event": "agent:draft", "data": {"seconds": 2.229, "produced": ["artifacts", "flags", "summary", "llm_used"]}}
+{"ts": "2026-11-02T21:02:12.328574+00:00", "case_id": "CASE-9C23D420", "event": "awaiting_human_approval", "data": {"recommended_action": "No action: continue monitoring"}}
+{"ts": "2026-11-02T21:02:12.332693+00:00", "case_id": "CASE-A4E366EA", "event": "investigation_started", "data": {"domain": "manufacturing", "subject_id": "PUMP-07"}}
+{"ts": "2026-11-02T21:02:12.340201+00:00", "case_id": "CASE-A4E366EA", "event": "agent:gather", "data": {"seconds": 0.003, "produced": ["evidence", "ctx"]}}
+{"ts": "2026-11-02T21:02:12.341611+00:00", "case_id": "CASE-A4E366EA", "event": "agent:retrieve", "data": {"seconds": 0.0, "produced": ["citations"]}}
+{"ts": "2026-11-02T21:02:12.343129+00:00", "case_id": "CASE-A4E366EA", "event": "agent:guard", "data": {"seconds": 0.001, "produced": ["evidence", "citations", "ctx", "flags"]}}
+{"ts": "2026-11-02T21:02:12.343902+00:00", "case_id": "CASE-A4E366EA", "event": "agent:reason", "data": {"seconds": 0.0, "produced": ["analysis"]}}
+{"ts": "2026-11-02T21:02:12.344591+00:00", "case_id": "CASE-A4E366EA", "event": "agent:second_opinion", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:02:12.345218+00:00", "case_id": "CASE-A4E366EA", "event": "agent:agent_loop", "data": {"seconds": 0.0, "produced": []}}
+{"ts": "2026-11-02T21:02:14.578136+00:00", "case_id": "CASE-A4E366EA", "event": "agent:draft", "data": {"seconds": 2.232, "produced": ["artifacts", "flags", "summary", "llm_used"]}}
+{"ts": "2026-11-02T21:02:14.580542+00:00", "case_id": "CASE-A4E366EA", "event": "awaiting_human_approval", "data": {"recommended_action": "Schedule corrective maintenance within 48 hours and raise a work order"}}

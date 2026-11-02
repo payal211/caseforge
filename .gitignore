@@ -1,0 +1,8 @@
+.env
+.venv/
+
+setup.ps1
+run.ps1
+CASEFORGE_DECK_EXECUTIVE.md
+CASEFORGE_DECK.md
+CaseForge_what_it_is_for.pptx

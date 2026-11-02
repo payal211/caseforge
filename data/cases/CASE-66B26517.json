@@ -1,0 +1,89 @@
+{
+  "case_id": "CASE-66B26517",
+  "domain": "bfsi",
+  "subject_id": "TXN-9002",
+  "status": "pending_approval",
+  "created_at": "2026-11-02T21:01:56.483686Z",
+  "risk_score": 0.0,
+  "recommended_action": "Decline dispute as legitimate and refer customer to merchant dispute process",
+  "summary": "Transaction TXN-9002 scored 0/100. Key signals: none. Recommended action per policy section 'Escalation thresholds': Decline dispute as legitimate and refer customer to merchant dispute process. Human approval required.",
+  "reasoning": [
+    "No risk signals triggered.",
+    "Policy basis: dispute_policy.md / Escalation thresholds."
+  ],
+  "evidence": [
+    {
+      "source": "customer_profile",
+      "signal": "profile",
+      "detail": "Account ACC-1002 (Rohan Mehta), home country IN, 28 prior transactions.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "transaction_history",
+      "signal": "abnormal_amount",
+      "detail": "Amount 2,450 vs customer average 2,538 (z=-0.1).",
+      "weight": 0.0,
+      "raw": {
+        "z": -0.07
+      }
+    },
+    {
+      "source": "device_signals",
+      "signal": "new_device",
+      "detail": "Device DEV-B1 previously seen on this account.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "geo_signals",
+      "signal": "foreign_geo",
+      "detail": "Transaction in home country.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "transaction_history",
+      "signal": "velocity",
+      "detail": "0 other transactions in the prior hour.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "identity_signals",
+      "signal": "shared_device",
+      "detail": "Device DEV-B1 linked to 1 account(s).",
+      "weight": 0.0,
+      "raw": {}
+    }
+  ],
+  "citations": [
+    {
+      "doc": "dispute_policy.md",
+      "section": "Escalation thresholds",
+      "excerpt": "Risk score of 70 or above: recommend block and refund. Score between 40 and 69: escalate to a senior analyst and request customer verification. Score below 40: decline the dispute and refer the customer to the merchant dispute process. Every recommendation requires human approval.",
+      "score": 1.793
+    },
+    {
+      "doc": "dispute_policy.md",
+      "section": "Unauthorized transaction criteria",
+      "excerpt": "A disputed transaction is treated as unauthorized when the customer denies initiating it and at least two independent risk signals are present, such as a new device, an unusual country, abnormal amount or rapid velocity. Fraud confirmation requires analyst approval.",
+      "score": 1.098
+    },
+    {
+      "doc": "dispute_policy.md",
+      "section": "Customer liability and refund",
+      "excerpt": "When fraud is approved, the customer is refunded within 10 business days and the card is blocked and reissued. Customers carry zero liability for confirmed unauthorized transactions reported within 3 days.",
+      "score": 0.627
+    }
+  ],
+  "artifacts": {
+    "customer_notification_draft": "Dear Rohan Mehta, our review shows transaction TXN-9002 matches your usual activity. Please contact Swiggy to resolve the charge or reply if you still disagree."
+  },
+  "llm_used": false,
+  "guardrail_flags": [],
+  "second_opinion": null,
+  "agent_run": null,
+  "investigation_seconds": 2.29,
+  "decision": null
+}

@@ -1,0 +1,90 @@
+{
+  "case_id": "CASE-849622A4",
+  "domain": "bfsi",
+  "subject_id": "TXN-9003",
+  "status": "pending_approval",
+  "created_at": "2026-11-02T21:01:58.754127Z",
+  "risk_score": 40.0,
+  "recommended_action": "Escalate to senior analyst and request customer verification",
+  "summary": "Transaction TXN-9003 scored 40/100. Key signals: Amount 42,000 vs customer average 3,194 (z=20.0); Transaction in AE (home IN); prior activity exists there. Recommended action per policy section 'Cross-border transactions': Escalate to senior analyst and request customer verification. Human approval required.",
+  "reasoning": [
+    "abnormal_amount: Amount 42,000 vs customer average 3,194 (z=20.0). (+30)",
+    "foreign_geo: Transaction in AE (home IN); prior activity exists there. (+10)",
+    "Policy basis: dispute_policy.md / Cross-border transactions."
+  ],
+  "evidence": [
+    {
+      "source": "customer_profile",
+      "signal": "profile",
+      "detail": "Account ACC-1003 (Priya Nair), home country IN, 34 prior transactions.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "transaction_history",
+      "signal": "abnormal_amount",
+      "detail": "Amount 42,000 vs customer average 3,194 (z=20.0).",
+      "weight": 30.0,
+      "raw": {
+        "z": 19.96
+      }
+    },
+    {
+      "source": "device_signals",
+      "signal": "new_device",
+      "detail": "Device DEV-T1 previously seen on this account.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "geo_signals",
+      "signal": "foreign_geo",
+      "detail": "Transaction in AE (home IN); prior activity exists there.",
+      "weight": 10.0,
+      "raw": {}
+    },
+    {
+      "source": "transaction_history",
+      "signal": "velocity",
+      "detail": "0 other transactions in the prior hour.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "identity_signals",
+      "signal": "shared_device",
+      "detail": "Device DEV-T1 linked to 1 account(s).",
+      "weight": 0.0,
+      "raw": {}
+    }
+  ],
+  "citations": [
+    {
+      "doc": "dispute_policy.md",
+      "section": "Cross-border transactions",
+      "excerpt": "A transaction in a country that differs from the customer's home country and has no prior history is high risk. If the customer has previous activity in that country on a known device, treat the transaction as lower risk and verify with the customer.",
+      "score": 4.154
+    },
+    {
+      "doc": "dispute_policy.md",
+      "section": "Abnormal amount",
+      "excerpt": "An amount more than four standard deviations above the customer's historical average requires step-up verification. Amounts between two and four deviations warrant analyst review.",
+      "score": 3.056
+    },
+    {
+      "doc": "dispute_policy.md",
+      "section": "Unauthorized transaction criteria",
+      "excerpt": "A disputed transaction is treated as unauthorized when the customer denies initiating it and at least two independent risk signals are present, such as a new device, an unusual country, abnormal amount or rapid velocity. Fraud confirmation requires analyst approval.",
+      "score": 2.197
+    }
+  ],
+  "artifacts": {
+    "customer_notification_draft": "Dear Priya Nair, we need to verify transaction TXN-9003 with you before we can conclude your dispute. A specialist will contact you shortly."
+  },
+  "llm_used": false,
+  "guardrail_flags": [],
+  "second_opinion": null,
+  "agent_run": null,
+  "investigation_seconds": 2.27,
+  "decision": null
+}

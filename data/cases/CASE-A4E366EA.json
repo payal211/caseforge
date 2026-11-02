@@ -1,0 +1,106 @@
+{
+  "case_id": "CASE-A4E366EA",
+  "domain": "manufacturing",
+  "subject_id": "PUMP-07",
+  "status": "pending_approval",
+  "created_at": "2026-11-02T21:02:14.579634Z",
+  "risk_score": 70.0,
+  "recommended_action": "Schedule corrective maintenance within 48 hours and raise a work order",
+  "summary": "Machine PUMP-07 scored 70/100. Drift: vibration_mm_s last 24h mean 6.04 vs baseline 2.20±0.08 (z=+49.9, trend +1.16/day, up); temp_c last 24h mean 68.68 vs baseline 61.03±0.64 (z=+11.9, trend +2.05/day, up). Recommended action (manual section 'Bearing wear'): Schedule corrective maintenance within 48 hours and raise a work order. Human approval required.",
+  "reasoning": [
+    "vibration_mm_s_drift: vibration_mm_s last 24h mean 6.04 vs baseline 2.20±0.08 (z=+49.9, trend +1.16/day, up). (+35)",
+    "temp_c_drift: temp_c last 24h mean 68.68 vs baseline 61.03±0.64 (z=+11.9, trend +2.05/day, up). (+35)",
+    "Probable root cause: Bearing wear (drift pattern matches manual section).",
+    "Manual basis: rotating_equipment_manual.md / Bearing wear."
+  ],
+  "evidence": [
+    {
+      "source": "sensor_logs",
+      "signal": "vibration_mm_s_drift",
+      "detail": "vibration_mm_s last 24h mean 6.04 vs baseline 2.20±0.08 (z=+49.9, trend +1.16/day, up).",
+      "weight": 35.0,
+      "raw": {
+        "z": 49.9,
+        "direction": "up"
+      }
+    },
+    {
+      "source": "sensor_logs",
+      "signal": "temp_c_drift",
+      "detail": "temp_c last 24h mean 68.68 vs baseline 61.03±0.64 (z=+11.9, trend +2.05/day, up).",
+      "weight": 35.0,
+      "raw": {
+        "z": 11.92,
+        "direction": "up"
+      }
+    },
+    {
+      "source": "sensor_logs",
+      "signal": "pressure_bar_stable",
+      "detail": "pressure_bar within baseline (z=+0.1).",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "sensor_logs",
+      "signal": "current_a_stable",
+      "detail": "current_a within baseline (z=+2.5).",
+      "weight": 0.0,
+      "raw": {}
+    }
+  ],
+  "citations": [
+    {
+      "doc": "rotating_equipment_manual.md",
+      "section": "Bearing wear",
+      "excerpt": "Symptoms: vibration and bearing temperature drift upward together. Vibration above 4.5 mm/s indicates advanced wear. Typical root causes are lubrication breakdown, misalignment or contamination. Plan corrective maintenance within 48 hours.\nStep: Isolate and lock out the machine\nStep: Inspect the bearing housing and take a grease sample\nStep: Replace drive-end and non-drive-end bearings\nStep: Realign the coupling and re-lubricate\nPart: BRG-6205-2RS | Deep groove ball bearing | qty 2\nPart: GRS-EP2-400 | EP2 bearing grease cartridge | qty 1\nEstimated downtime: 6 hours",
+      "score": 1.895
+    },
+    {
+      "doc": "rotating_equipment_manual.md",
+      "section": "General inspection",
+      "excerpt": "If drift cannot be classified, schedule a visual inspection and vibration spectrum analysis at the next planned stop.\nStep: Visual inspection and vibration spectrum capture\nEstimated downtime: 1 hours",
+      "score": 0.353
+    },
+    {
+      "doc": "rotating_equipment_manual.md",
+      "section": "Seal leak and pressure loss",
+      "excerpt": "Symptoms: discharge pressure falls while motor current rises. Typical root causes are mechanical seal leakage or impeller wear. Inspect at the next shift and plan seal replacement.\nStep: Isolate and depressurise the line\nStep: Inspect the mechanical seal and impeller for wear\nStep: Replace the mechanical seal and gaskets\nPart: SEAL-MS-35 | Mechanical seal 35 mm | qty 1\nPart: GSK-KIT-12 | Gasket kit | qty 1\nEstimated downtime: 4 hours",
+      "score": 0.299
+    }
+  ],
+  "artifacts": {
+    "work_order": {
+      "machine": "PUMP-07",
+      "priority": "P1",
+      "suspected_cause": "Bearing wear",
+      "tasks": [
+        "Isolate and lock out the machine",
+        "Inspect the bearing housing and take a grease sample",
+        "Replace drive-end and non-drive-end bearings",
+        "Realign the coupling and re-lubricate"
+      ],
+      "estimated_downtime_hours": 6,
+      "source_section": "rotating_equipment_manual.md / Bearing wear",
+      "requires_approval": true
+    },
+    "parts_request": [
+      {
+        "part_no": "BRG-6205-2RS",
+        "description": "Deep groove ball bearing",
+        "qty": 2
+      },
+      {
+        "part_no": "GRS-EP2-400",
+        "description": "EP2 bearing grease cartridge",
+        "qty": 1
+      }
+    ]
+  },
+  "llm_used": false,
+  "guardrail_flags": [],
+  "second_opinion": null,
+  "agent_run": null,
+  "investigation_seconds": 2.25,
+  "decision": null
+}

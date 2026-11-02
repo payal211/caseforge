@@ -1,0 +1,113 @@
+{
+  "case_id": "CASE-42CD75B8",
+  "domain": "claims",
+  "subject_id": "CLM-9001",
+  "status": "pending_approval",
+  "created_at": "2026-11-02T21:02:07.807512Z",
+  "risk_score": 100.0,
+  "recommended_action": "Refer to special investigations unit and hold payout",
+  "summary": "Case CLM-9001 scored 100/100. Key signals: Claim amount 48000.0 vs this policy's average 2,377 (z=38.7); Provider PRV-X9 has never billed this policy before; Payout account ACCT-FRAUD is used by 3 different policies. Recommended action per section 'Out of state claim': Refer to special investigations unit and hold payout. Human approval required.",
+  "reasoning": [
+    "abnormal_amount: Claim amount 48000.0 vs this policy's average 2,377 (z=38.7). (+30)",
+    "high_value: Claim amount 48000.0 is above the 25,000 senior-review limit. (+10)",
+    "new_provider: Provider PRV-X9 has never billed this policy before. (+20)",
+    "out_of_state: Claim from NV, policy home state is CA. (+10)",
+    "claim_burst: 2 other claims on this policy in the previous 3 hours. (+15)",
+    "shared_bank_account: Payout account ACCT-FRAUD is used by 3 different policies. (+20)",
+    "night_filing: Claim filed at 02:14, outside normal hours. (+5)",
+    "Policy basis: claims_policy.md / Out of state claim."
+  ],
+  "evidence": [
+    {
+      "source": "profile",
+      "signal": "profile",
+      "detail": "policy_id POL-101: 25 established prior records, 27 other records in total.",
+      "weight": 0.0,
+      "raw": {}
+    },
+    {
+      "source": "claim_history",
+      "signal": "abnormal_amount",
+      "detail": "Claim amount 48000.0 vs this policy's average 2,377 (z=38.7).",
+      "weight": 30.0,
+      "raw": {
+        "z": 38.68
+      }
+    },
+    {
+      "source": "claim_history",
+      "signal": "high_value",
+      "detail": "Claim amount 48000.0 is above the 25,000 senior-review limit.",
+      "weight": 10.0,
+      "raw": {}
+    },
+    {
+      "source": "provider_signals",
+      "signal": "new_provider",
+      "detail": "Provider PRV-X9 has never billed this policy before.",
+      "weight": 20.0,
+      "raw": {}
+    },
+    {
+      "source": "geo_signals",
+      "signal": "out_of_state",
+      "detail": "Claim from NV, policy home state is CA.",
+      "weight": 10.0,
+      "raw": {}
+    },
+    {
+      "source": "claim_history",
+      "signal": "claim_burst",
+      "detail": "2 other claims on this policy in the previous 3 hours.",
+      "weight": 15.0,
+      "raw": {
+        "count": 2
+      }
+    },
+    {
+      "source": "identity_signals",
+      "signal": "shared_bank_account",
+      "detail": "Payout account ACCT-FRAUD is used by 3 different policies.",
+      "weight": 20.0,
+      "raw": {
+        "groups": 3
+      }
+    },
+    {
+      "source": "claim_history",
+      "signal": "night_filing",
+      "detail": "Claim filed at 02:14, outside normal hours.",
+      "weight": 5.0,
+      "raw": {}
+    }
+  ],
+  "citations": [
+    {
+      "doc": "claims_policy.md",
+      "section": "Out of state claim",
+      "excerpt": "A claim filed from a state different from the policy home state needs location verification, unless the policy has travel cover.",
+      "score": 6.502
+    },
+    {
+      "doc": "claims_policy.md",
+      "section": "High value claim senior review limit",
+      "excerpt": "Any claim of 25,000 or more must be reviewed by a senior adjuster regardless of other signals.",
+      "score": 4.711
+    },
+    {
+      "doc": "claims_policy.md",
+      "section": "Shared payout bank account",
+      "excerpt": "A payout account linked to three or more unrelated policies indicates a possible fraud ring. Hold payment and refer to the special investigations unit.",
+      "score": 4.681
+    }
+  ],
+  "artifacts": {
+    "claimant_message_draft": "Dear Maya Iyer, claim CLM-9001 needs additional verification before any payment. A specialist will contact you."
+  },
+  "llm_used": false,
+  "guardrail_flags": [],
+  "second_opinion": null,
+  "agent_run": null,
+  "investigation_seconds": 2.27,
+  "decision": null
+}
