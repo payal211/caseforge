@@ -23,6 +23,10 @@ beforeEach(() => {
     if (url === "/domains") return ok([{ name: "bfsi", title: "Fraud", subjects: [{ subject_id: "TXN-9001", label: "ACC-1001 · 185000" }] }]);
     if (url === "/demo/attacks") return ok([]);
     if (url === "/metrics") return ok({ by_domain: {} });
+    if (url === "/cx/assistant/sessions" && m === "POST") return ok({ session_id: "SESSION-1" });
+    if (url === "/cx/assistant/sessions/SESSION-1/messages" && m === "POST") {
+      return ok({ reply: "I found your recent transactions.", activities: ["list_recent_transactions"] });
+    }
     if (url === "/cases" && m === "GET") return ok(cases);
     if (url === "/cases" && m === "POST") { cases = [CASE]; return ok(CASE); }
     if (url === "/cases/CASE-1") return ok(CASE);
@@ -47,5 +51,29 @@ describe("console", () => {
     expect(el.textContent).toContain("Device DEV-X77 never seen");
     expect(el.textContent).toContain("Approve recommendation");
     expect(el.textContent).toContain("Dear Asha");
+  });
+
+  it("integrates the customer assistant into the app and sends chat messages", async () => {
+    const el = document.createElement("div");
+    document.body.appendChild(el);
+    await act(async () => createRoot(el).render(<App />));
+    await flush();
+    const customerTab = [...el.querySelectorAll("button")].find((b) => b.textContent === "Customer agent");
+    await act(async () => customerTab.click());
+    await flush();
+    expect(el.textContent).toContain("Card dispute assistant");
+    expect(el.textContent).toContain("Asha Verma");
+    const input = el.querySelector('input[aria-label="Message the dispute assistant"]');
+    await act(async () => {
+      const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
+      setValue.call(input, "I don't recognize a charge");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await flush();
+    const form = el.querySelector(".chat-compose");
+    await act(async () => form.requestSubmit());
+    await flush();
+    expect(el.textContent).toContain("I found your recent transactions.");
+    expect(el.textContent).toContain("Looked up recent transactions");
   });
 });

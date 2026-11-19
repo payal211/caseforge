@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "./api";
 import Sidebar from "./components/Sidebar.jsx";
 import CaseView from "./components/CaseView.jsx";
+import CustomerChat from "./components/CustomerChat.jsx";
 import "./styles.css";
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
   const [metrics, setMetrics] = useState({});
   const [active, setActive] = useState(null); // { id, attack? }
   const [error, setError] = useState("");
+  const [experience, setExperience] = useState("analyst");
 
   const refresh = useCallback(async () => {
     const [c, m] = await Promise.all([api("/cases"), api("/metrics")]);
@@ -53,8 +55,8 @@ export default function App() {
   return (
     <>
       <header>
-        <h1>CaseForge approval console</h1>
-        <div className="chip">
+        <h1>CaseForge</h1>
+        {experience === "analyst" && <div className="chip">
           {Object.keys(metrics).length
             ? Object.entries(metrics).map(([n, d], i) => (
                 <span key={n}>
@@ -64,10 +66,22 @@ export default function App() {
                 </span>
               ))
             : "No cases run yet"}
-        </div>
-        <button onClick={reset}>Reset demo</button>
+        </div>}
+        <nav className="experience-tabs" aria-label="CaseForge experience">
+          <button aria-pressed={experience === "analyst"} onClick={() => setExperience("analyst")}>
+            Analyst console
+          </button>
+          <button aria-pressed={experience === "customer"} onClick={() => setExperience("customer")}>
+            Customer agent
+          </button>
+        </nav>
+        {experience === "analyst" && <button onClick={reset}>Reset demo</button>}
       </header>
-      <main>
+      {experience === "customer" ? (
+        <main className="customer-main">
+          <CustomerChat onActivity={refresh} />
+        </main>
+      ) : <main>
         <Sidebar
           domains={domains} cur={cur} setCur={setCur} cases={cases} attacks={attacks}
           activeId={active?.id} onInvestigate={investigate} onOpen={(id) => setActive({ id })} onAttack={runAttack}
@@ -84,7 +98,7 @@ export default function App() {
             </div>
           )}
         </div>
-      </main>
+      </main>}
     </>
   );
 }

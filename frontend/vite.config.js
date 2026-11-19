@@ -7,6 +7,6 @@ export default defineConfig({
   plugins: [react()],
   base: "/ui/",
   build: { outDir: path.resolve(__dirname, "../caseforge/api/static"), emptyOutDir: true },
-  server: { proxy: Object.fromEntries(["/cases", "/domains", "/demo", "/metrics", "/health"].map((p) => [p, api])) },
+  server: { proxy: Object.fromEntries(["/cases", "/domains", "/demo", "/metrics", "/health", "/cx"].map((p) => [p, api])) },
   test: { environment: "jsdom" },
 });

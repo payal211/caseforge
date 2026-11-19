@@ -50,6 +50,14 @@ Then open:
 
 For a deeper setup and environment configuration walkthrough, see [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md).
 
+### Customer-agent demo in the CaseForge UI
+Start the normal API with `uvicorn caseforge.api.main:app --reload`, open http://localhost:8000/ui/,
+and choose **Customer agent**. This opens a local GECX-style ADK chat beside the analyst console
+and sends disputes to the same CaseForge API and case queue. Choose **Analyst console** to review
+and decide those cases. The selector uses synthetic demo accounts and is not authentication.
+Set `GECX_PROVIDER=ollama` and `GECX_MODEL=llama3.1:latest` before starting Uvicorn to use Ollama.
+The terminal-only `python gecx/demo.py` remains available as a separate scripted walkthrough.
+
 ## What the project does
 CaseForge creates a case file for a domain subject, gathers evidence, checks for suspicious or poisoned inputs, and produces a recommendation with citations and artifacts. Each case is saved with decision state and audit records.
 
@@ -143,9 +151,35 @@ GET /metrics
 ## Optional integrations
 ### Ollama
 ```bash
-ollama pull llama3.1:8b
-LLM_MODE=auto python -m caseforge.cli
+ollama show llama3.1:latest
 ```
+
+Ollama should list `tools` under the model's capabilities before you use it with the GECX
+customer agent. Your installed `llama3.1:latest` is an 8B model and reports tool support.
+Gemma is not installed in this checkout's Ollama environment, so its tool support has not
+been verified.
+
+On Windows PowerShell, select the installed model and run the core app:
+```powershell
+$env:LLM_MODE = "auto"
+python -m caseforge.doctor
+python -m caseforge.cli
+uvicorn caseforge.api.main:app --reload
+```
+
+CaseForge uses Ollama for its investigation summaries. To use the same local model for
+the optional Google ADK customer agent too, install the dependencies from
+`requirements.txt`, then set these variables before starting the agent:
+```powershell
+$env:GECX_PROVIDER = "ollama"
+$env:GECX_MODEL = "llama3.1:latest"
+python gecx/demo.py
+```
+The GECX agent uses LiteLLM to call Ollama; `GECX_MODEL` selects its model, while
+`OLLAMA_MODEL` selects the CaseForge investigation model. `GECX_PROVIDER=auto` preserves
+the default behavior: Gemini when Google credentials are configured, otherwise the scripted
+offline demo. Before using another model for the customer agent, run `ollama show <model>`
+and confirm its capabilities include `tools`.
 
 ### PostgreSQL
 ```bash
@@ -186,3 +220,7 @@ LLM_MODE=mock python -m pytest -q
 - Kafka connector is not implemented.
 - Embedding-based retrieval is not yet in place.
 - Manual-time baselines in metrics are assumed values and should be replaced with measured data.
+
+
+## GECX customer-channel integration
+A customer-facing agent built with Google ADK (GECX-style) can open and track disputes through the customer-safe `/cx` API. See [gecx/README.md](gecx/README.md); run `python gecx/demo.py`.

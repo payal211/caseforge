@@ -10,3 +10,5 @@ typesafe-sdk>=0.7  # optional: only needed when CASEFORGE_JEV=on
 psycopg[binary]>=3.1  # optional: only needed for PostgreSQL (CASEFORGE_DB_URL or SQL connector)
 pyarrow>=15  # optional: only needed for the Parquet connector
 pyyaml>=6  # required: the claims pack and any no-code pack use YAML
+google-adk>=1.0  # required: integrated GECX customer-agent UI and terminal demo
+litellm>=1.0  # optional: only for using Ollama with the ADK customer-agent demo

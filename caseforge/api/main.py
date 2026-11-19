@@ -11,11 +11,15 @@ from pydantic import BaseModel
 from ..core.orchestrator import Orchestrator
 from ..demo_attacks import ATTACKS, catalogue, run_attack
 from ..packs import load_packs
+from .cx import build_router as build_cx_router
+from .gecx import build_router as build_gecx_router
 
 app = FastAPI(title="CaseForge", version="0.1.0",
               description="Shared multi-agent investigation platform with pluggable domain packs.")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 orch = Orchestrator(load_packs())
+app.include_router(build_cx_router(orch))
+app.include_router(build_gecx_router(orch))
 
 
 class NewCase(BaseModel):
