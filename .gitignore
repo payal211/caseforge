@@ -6,3 +6,21 @@ run.ps1
 CASEFORGE_DECK_EXECUTIVE.md
 CASEFORGE_DECK.md
 CaseForge_what_it_is_for.pptx
+CaseForge_Jury_Presentation.pptx
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage/
+
+# Frontend dependencies and local build output
+node_modules/
+frontend/dist/
+
+# Local runtime state
+data/audit.jsonl
+data/cases/*.json

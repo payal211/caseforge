@@ -67,7 +67,7 @@ class ToolBox:
         return ToolResult(True, json.dumps(clean, default=str)[:MAX_RESULT_CHARS], flags)
 
 
-def build_toolbox(pack, evidence, sandbox=None, data=None) -> ToolBox:
+def build_toolbox(pack, evidence, sandbox=None, data=None, subject_id: str | None = None) -> ToolBox:
     """Generic tools every domain pack gets for free, derived from the pack itself."""
     sources = pack.lookup_sources()
 
@@ -83,7 +83,33 @@ def build_toolbox(pack, evidence, sandbox=None, data=None) -> ToolBox:
         conn, allowed = sources[source]
         if field not in allowed:
             raise ToolError(f"field not allowed for {source}. Allowed: {list(allowed)}")
-        rows = [r for r in conn.rows() if r.get(field) == value]
+        source_rows = conn.rows()
+        if subject_id is not None:
+            if pack.name == "bfsi":
+                subject = next((r for r in pack.txns.rows() if r.get("txn_id") == subject_id), None)
+                if subject is None:
+                    raise ToolError("case subject is no longer available")
+                account_id = subject["account_id"]
+                if source == "transactions":
+                    source_rows = [r for r in source_rows if r.get("account_id") == account_id]
+                elif source == "accounts":
+                    source_rows = [r for r in source_rows if r.get("account_id") == account_id]
+                else:
+                    source_rows = []
+            elif pack.name == "manufacturing" and source == "sensors":
+                source_rows = [r for r in source_rows if r.get("machine_id") == subject_id]
+            elif hasattr(pack, "spec") and source == "records":
+                spec = pack.spec
+                entity_field = spec["entity_field"]
+                id_field = spec["id_field"]
+                subject = next((r for r in pack.records.rows() if r.get(id_field) == subject_id), None)
+                if subject is None:
+                    raise ToolError("case subject is no longer available")
+                entity_value = subject.get(entity_field)
+                source_rows = [r for r in source_rows if r.get(entity_field) == entity_value]
+            else:
+                source_rows = []
+        rows = [r for r in source_rows if r.get(field) == value]
         rows.sort(key=lambda r: r.get("ts", ""), reverse=True)
         return rows[:MAX_ROWS]
 

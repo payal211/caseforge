@@ -33,7 +33,7 @@ def check_environment() -> list[R]:
                  "Need Python 3.10 or newer (python.org, tick 'Add python.exe to PATH')."))
     for mod, pip, required in (("fastapi", "fastapi", 1), ("uvicorn", "uvicorn", 1), ("pydantic", "pydantic", 1),
                                ("httpx", "httpx", 1), ("langgraph", "langgraph", 1), ("sqlalchemy", "sqlalchemy", 1),
-                               ("yaml", "pyyaml", 1), ("mcp", "mcp", 0), ("pyarrow", "pyarrow", 0),
+                               ("yaml", "pyyaml", 1), ("mcp", "mcp", 1), ("pyarrow", "pyarrow", 0),
                                ("psycopg", "psycopg[binary]", 0), ("typesafe_sdk", "typesafe-sdk", 0)):
         ok = _mod(mod)
         out.append(R("PASS" if ok else ("FAIL" if required else "WARN"), f"package {pip}" + ("" if ok else " missing"),
@@ -69,12 +69,14 @@ def check_ollama() -> list[R]:
     import httpx
     from .core.audit import AuditLog
     from .core.jev import JevClient
+    from .core.llm import LLMError
     from .core.orchestrator import Orchestrator
     from .core.store import CaseStore
+    from .harness.loop import AgentLoopError
     from .packs import load_packs
     if config.LLM_MODE == "mock":
-        return [R("WARN", "LLM_MODE=mock: summaries are rule-based (a good fallback demo mode)",
-                  "For real model text: set LLM_MODE=auto and start Ollama.")]
+        return [R("WARN", "LLM_MODE=mock: LLM agent calls are disabled (test mode)",
+                  "For the real agent: unset LLM_MODE or set LLM_MODE=required, then start Ollama.")]
     try:
         tags = httpx.get(f"{config.OLLAMA_URL}/api/tags", timeout=5).json()
     except Exception:
@@ -89,8 +91,12 @@ def check_ollama() -> list[R]:
         old, config.DATA_DIR = config.DATA_DIR, Path(tmp)
         try:
             t0 = time.perf_counter()
-            case = Orchestrator(load_packs(), store=CaseStore(), audit=AuditLog(),
-                                jev=JevClient(enabled=False)).investigate("bfsi", "TXN-9001")
+            try:
+                case = Orchestrator(load_packs(), store=CaseStore(), audit=AuditLog(),
+                                    jev=JevClient(enabled=False)).investigate("bfsi", "TXN-9001")
+            except (AgentLoopError, LLMError) as e:
+                return out + [R("FAIL", "LLM/MCP investigation agent failed", f"{e}. "
+                                  "Choose an Ollama model whose capabilities include 'tools'.")]
             dt = time.perf_counter() - t0
         finally:
             config.DATA_DIR = old
@@ -128,8 +134,8 @@ def main(argv=None) -> int:
             results += check_ollama()
     for r in results:
         print(f"[{r.level}] {r.name}" + (f"\n        fix: {r.hint}" if r.hint and r.level != "PASS" else ""))
-    print(f"\nstorage: {'PostgreSQL' if os.getenv('CASEFORGE_DB_URL') else 'JSON files'} | agent loop: "
-          f"{os.getenv('CASEFORGE_AGENTIC', 'off')} | Jev layer: {os.getenv('CASEFORGE_JEV', 'off')}")
+    print(f"\nstorage: {'PostgreSQL' if os.getenv('CASEFORGE_DB_URL') else 'JSON files'} | "
+          f"agent loop: MCP/LLM required | Jev layer: {os.getenv('CASEFORGE_JEV', 'off')}")
     bad = [r for r in results if r.level == "FAIL"]
     print("\nREADY: start with  uvicorn caseforge.api.main:app  then open http://localhost:8000" if not bad
           else f"\n{len(bad)} problem(s) to fix above.")

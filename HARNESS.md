@@ -8,7 +8,7 @@ CaseForge is split in two. The **harness** (everything industry-neutral) and the
 | Prompt-injection guardrails, redaction, output validation | Risk rules and weights |
 | Human approve / reject / override, audit trail, atomic decisions | Policy or manual documents (`## Section` headings become citations) |
 | Case storage (JSON files or PostgreSQL), REST API, React console, MCP server | Score bands to actions, draft message templates |
-| Optional agent loop with read-only tools, budgets, grounded notes | A few scenarios with the expected outcome |
+| Default LLM agent via case-scoped MCP read-only tools, budgets, grounded notes | A few scenarios with the expected outcome |
 | Eval harness and attack tests that gate CI | |
 
 ## Add an industry in four commands (no Python)
@@ -32,8 +32,17 @@ one pack file of about 125 lines). Both kinds are discovered automatically and b
 
 ## Run the checks
 `python -m caseforge.harness evals` runs every pack's scenarios and all attacks and exits non-zero on failure (use it in CI).
-Agent loop (advisory, off by default): `CASEFORGE_AGENTIC=on`; it can call only `get_evidence`, `search_documents`, `lookup` (allowlisted fields), and, if you enable the container sandbox (SANDBOX.md), `run_python`,
-within step and tool budgets; every note must cite a tool call; unsafe text is dropped; it can never change a score or approve.
+The supervisor routes each live investigation to domain specialists by default and connects them
+to one per-case MCP stdio server. BFSI uses fraud-forensics and policy-analysis workers;
+manufacturing uses telemetry-diagnostics and maintenance-policy workers; declarative packs get
+record-forensics and policy workers. The workers can call only `get_evidence`,
+`search_documents`, and `lookup` with account/entity-scoped allowlisted fields. Step and tool
+budgets apply; every note must cite a successful tool call. A deterministic evaluator rejects
+unsafe notes or citations to failed/other-worker calls. Workers cannot change deterministic
+scoring or approve a case. The case and audit log preserve the worker and tool trace, then the
+case pauses for a human decision. Ollama and a working model with native tool-call support are
+required for live investigations; tests and the explicitly scripted offline demo use
+`LLM_MODE=mock`.
 
 ## Honest limits
 Declarative packs cover record-style cases (judge one record against its entity's history). Rules are simple statistics, not trained models, and are

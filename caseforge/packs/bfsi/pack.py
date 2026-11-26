@@ -4,7 +4,7 @@ from pathlib import Path
 
 from ...core.connectors import make_connector
 from ...core.schema import Analysis, Citation, Evidence
-from ..base import DomainPack
+from ..base import DomainPack, weighted_score
 
 HERE = Path(__file__).parent
 KEYWORDS = {
@@ -23,6 +23,16 @@ def _ts(s: str) -> datetime:
 class BfsiPack(DomainPack):
     name = "bfsi"
     title = "Fraud and dispute investigator"
+    description = "Investigates disputed card transactions using account history, device signals, geography, velocity, and dispute policy."
+    objective = "Give an analyst a cited, evidence-based recommendation while keeping the final decision human-controlled."
+    scenario_guides = (
+        {"subject_id": "TXN-9001", "title": "High-risk cross-border dispute",
+         "why": "Unusually large amount, new device, foreign location, rapid transactions, shared device, and off-hours activity."},
+        {"subject_id": "TXN-9003", "title": "Needs analyst verification",
+         "why": "Abnormal amount and foreign activity with prior history; demonstrates a middle score band."},
+        {"subject_id": "TXN-9002", "title": "Routine-looking disputed charge",
+         "why": "No weighted fraud signals; demonstrates that a customer dispute is not automatically classified as fraud."},
+    )
     baseline_manual_minutes = 45  # ASSUMPTION: replace with measured analyst time
     jev_question = "Do these facts describe an unauthorized, fraudulent card transaction?"
 
@@ -32,7 +42,7 @@ class BfsiPack(DomainPack):
         self.accounts = make_connector("bfsi", "accounts", HERE / "data" / "accounts.csv")
 
     def lookup_sources(self):
-        return {"transactions": (self.txns, ("account_id", "device_id", "merchant", "country")),
+        return {"transactions": (self.txns, ("txn_id", "account_id", "device_id", "merchant", "country")),
                 "accounts": (self.accounts, ("account_id",))}
 
     def list_subjects(self):
@@ -105,7 +115,12 @@ class BfsiPack(DomainPack):
         return " ".join(words)
 
     def reason(self, evidence, ctx, citations):
-        score = min(100.0, sum(e.weight for e in evidence))
+        bands = [
+            {"minimum": 70, "recommendation": "Approve dispute as fraud: block card and refund customer"},
+            {"minimum": 40, "recommendation": "Escalate to senior analyst and request customer verification"},
+            {"minimum": 0, "recommendation": "Decline dispute as legitimate and refer customer to merchant dispute process"},
+        ]
+        score, score_breakdown = weighted_score(evidence, bands)
         if score >= 70:
             action = "Approve dispute as fraud: block card and refund customer"
         elif score >= 40:
@@ -116,7 +131,7 @@ class BfsiPack(DomainPack):
         reasoning = reasoning or ["No risk signals triggered."]
         if citations:
             reasoning.append(f"Policy basis: {citations[0].doc} / {citations[0].section}.")
-        return Analysis(risk_score=score, action=action, reasoning=reasoning)
+        return Analysis(risk_score=score, action=action, reasoning=reasoning, score_breakdown=score_breakdown)
 
     def draft_artifacts(self, subject_id, evidence, ctx, analysis, citations):
         name = ctx["account"]["name"]

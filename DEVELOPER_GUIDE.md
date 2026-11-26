@@ -6,7 +6,7 @@ This guide is the default onboarding path for CaseForge. It avoids shell-specifi
 - Python 3.11 or 3.12
 - A local package manager such as `pip`
 - Optional: Docker for PostgreSQL or sandboxed agent execution
-- Optional: Ollama for local LLM narrative generation
+- Ollama with a model selected in `OLLAMA_MODEL` for the live LLM investigation agent
 
 ## 2. Create and activate the environment
 ```bash
@@ -47,20 +47,26 @@ Open:
 
 ## 7. Test the project
 ```bash
-LLM_MODE=mock python -m pytest -q
+set "LLM_MODE=mock"
+python -m pytest -q
 ```
 
-This is the baseline verification path used for CI-like validation without requiring a live model.
+This is the Windows Command Prompt baseline verification path used for CI-like validation without requiring a live model.
+Open a new Command Prompt (or run `set "LLM_MODE="`) before starting a live API after tests.
 
-## 8. Optional: Ollama mode
-If you want narrative generation from a local model:
+## 8. Configure Ollama
 
 ```bash
 ollama pull llama3.1:8b
-LLM_MODE=auto python -m caseforge.cli
+ollama show llama3.1:8b
+python -m caseforge.cli
 ```
 
-Keep Ollama running while the app uses the model.
+Keep Ollama running while the app uses the model. The CaseForge agents call read-only, scoped
+tools through MCP and Ollama's native tool-calling API. `ollama show <model>` must list `tools`.
+`LLM_MODE` defaults to
+`required`; a model or MCP failure is shown as an investigation error. `LLM_MODE=mock` is
+reserved for tests and the explicitly scripted offline demo.
 
 ## 9. Optional: PostgreSQL storage
 This project can store case files and audit events in PostgreSQL instead of the default JSON files.
@@ -98,10 +104,11 @@ If you want the agent loop to run small model-generated Python snippets in a har
 ```bash
 python -m caseforge.harness sandbox-setup
 python -m caseforge.harness sandbox-check
-CASEFORGE_SANDBOX=on CASEFORGE_AGENTIC=on uvicorn caseforge.api.main:app --reload
+CASEFORGE_SANDBOX=on uvicorn caseforge.api.main:app --reload
 ```
 
-See [SANDBOX.md](SANDBOX.md) for the full isolation and safety model.
+The core MCP agent uses only read-only tools and does not execute model-written Python.
+See [SANDBOX.md](SANDBOX.md) for the separate sandbox utility's isolation and safety model.
 
 ## 12. Useful commands
 ```bash
@@ -130,7 +137,7 @@ Command purpose summary:
 1. Create a virtual environment.
 2. Install requirements.
 3. Run `python -m caseforge.doctor`.
-4. Run `LLM_MODE=mock python -m pytest -q`.
+4. In Windows Command Prompt, run `set "LLM_MODE=mock"` followed by `python -m pytest -q`.
 5. Launch the API with `uvicorn`.
 6. Open the console and investigate one BFSI and one manufacturing case.
 7. Try one guardrail or attack scenario before broadening scope.

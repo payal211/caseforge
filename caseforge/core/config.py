@@ -4,7 +4,7 @@ from pathlib import Path
 DATA_DIR = Path(os.getenv("CASEFORGE_DATA", "./data")).resolve()
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:latest")
-LLM_MODE = os.getenv("LLM_MODE", "auto")  # auto | mock
+LLM_MODE = os.getenv("LLM_MODE", "required")  # required | mock
 LLM_TIMEOUT = float(os.getenv("LLM_TIMEOUT", "120"))
 
 # Assumptions used only for the productivity metric. Replace with measured numbers.

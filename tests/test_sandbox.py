@@ -157,16 +157,20 @@ def test_tool_validates_code_and_redacts_hostile_output():
     assert res.ok and INJECT not in res.text and res.flags  # output of model-run code is untrusted data
 
 
-def test_agent_can_compute_in_the_sandbox_without_changing_the_decision(tmp_path, monkeypatch):
+def test_mcp_workers_do_not_execute_model_written_python(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "DATA_DIR", tmp_path)
     packs, fs = load_packs(), FakeSandbox("total weight 100\n")
     base = Orchestrator(packs, jev=JevClient(enabled=False), agentic=False).investigate("bfsi", "TXN-9001")
-    llm = Script([call("run_python", code="print(sum(e['weight'] for e in data['evidence']))"),
-                  final(("Evidence weights sum to the full score.", ["T1"]))])
+    llm = Script([
+        call("lookup", source="transactions", field="account_id", value="ACC-1001"),
+        final(("Transaction history was reviewed.", ["T1"])),
+        call("search_documents", query="dispute policy"),
+        final(("The policy leaves the outcome to an analyst.", ["T1"])),
+    ])
     c = Orchestrator(packs, llm=llm, jev=JevClient(enabled=False), agentic=True, sandbox=fs).investigate("bfsi", "TXN-9001")
-    assert c.agent_run["status"] == "completed" and c.agent_run["notes"][0]["evidence"] == ["T1"]
-    code, data = fs.seen[0]
-    assert {e["signal"] for e in data["evidence"]} >= {"new_device", "shared_device"} and "record" in data
+    assert c.agent_run["status"] == "completed"
+    assert all("run_python" not in prompt for prompt in llm.prompts)
+    assert fs.seen == []
     assert (c.risk_score, c.recommended_action) == (base.risk_score, base.recommended_action)
     assert c.status.value == "pending_approval"
 

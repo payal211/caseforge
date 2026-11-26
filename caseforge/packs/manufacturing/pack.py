@@ -4,7 +4,7 @@ from pathlib import Path
 
 from ...core.connectors import make_connector
 from ...core.schema import Analysis, Citation, Evidence
-from ..base import DomainPack
+from ..base import DomainPack, weighted_score
 
 HERE = Path(__file__).parent
 METRICS = ["vibration_mm_s", "temp_c", "pressure_bar", "current_a"]
@@ -39,6 +39,16 @@ def _slope_per_day(values: list[float]) -> float:
 class ManufacturingPack(DomainPack):
     name = "manufacturing"
     title = "Predictive maintenance root-cause agent"
+    description = "Compares recent machine telemetry with its historical baseline and searches maintenance manuals for matching fault patterns."
+    objective = "Help an engineer prioritize inspection or maintenance; the system drafts work only and never controls equipment."
+    scenario_guides = (
+        {"subject_id": "PUMP-07", "title": "Bearing-wear pattern",
+         "why": "Vibration and temperature are both far above baseline; the matching manual pattern supports corrective maintenance."},
+        {"subject_id": "COMP-02", "title": "Pressure/current drift",
+         "why": "Pressure falls while current rises; an inspection is recommended because the pattern is less severe."},
+        {"subject_id": "PUMP-03", "title": "Stable baseline",
+         "why": "Telemetry remains within baseline; the expected result is continued monitoring, not a maintenance action."},
+    )
     baseline_manual_minutes = 90  # ASSUMPTION: replace with measured engineer time
     jev_question = "Do these sensor findings indicate a machine fault that needs maintenance soon?"
 
@@ -88,7 +98,12 @@ class ManufacturingPack(DomainPack):
         return h["query"] if h else "general inspection drift unclassified"
 
     def reason(self, evidence, ctx, citations):
-        score = min(100.0, sum(e.weight for e in evidence))
+        bands = [
+            {"minimum": 70, "recommendation": "Schedule corrective maintenance within 48 hours and raise a work order"},
+            {"minimum": 40, "recommendation": "Raise an inspection work order for the next shift"},
+            {"minimum": 0, "recommendation": "No action: continue monitoring"},
+        ]
+        score, score_breakdown = weighted_score(evidence, bands)
         h = ctx["hypothesis"]
         if score >= 70:
             action = "Schedule corrective maintenance within 48 hours and raise a work order"
@@ -104,7 +119,7 @@ class ManufacturingPack(DomainPack):
             reasoning.append("Drift pattern did not match a known fault; general inspection advised.")
         if citations:
             reasoning.append(f"Manual basis: {citations[0].doc} / {citations[0].section}.")
-        return Analysis(risk_score=score, action=action, reasoning=reasoning)
+        return Analysis(risk_score=score, action=action, reasoning=reasoning, score_breakdown=score_breakdown)
 
     def draft_artifacts(self, subject_id, evidence, ctx, analysis, citations):
         if analysis.risk_score < 40:

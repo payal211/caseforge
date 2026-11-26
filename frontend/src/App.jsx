@@ -19,6 +19,7 @@ export default function App() {
     const [c, m] = await Promise.all([api("/cases"), api("/metrics")]);
     setCases(c);
     setMetrics(m.by_domain || {});
+    return c;
   }, []);
 
   useEffect(() => {
@@ -28,7 +29,10 @@ export default function App() {
         setDomains(d);
         setCur(d[0]?.name ?? null);
         setAttacks(await api("/demo/attacks"));
-        await refresh();
+        const existingCases = await refresh();
+        if (existingCases.length) {
+          setActive((current) => current ?? { id: existingCases[0].case_id });
+        }
       } catch (e) {
         setError(`Cannot reach the API: ${e.message}. Start it with: uvicorn caseforge.api.main:app`);
       }
@@ -51,6 +55,11 @@ export default function App() {
     setActive(null);
     await refresh();
   };
+  const refreshFromCustomer = useCallback(async (caseId) => {
+    const updatedCases = await refresh();
+    const selected = updatedCases.find((item) => item.case_id === caseId) ?? updatedCases[0];
+    if (selected) setActive({ id: selected.case_id });
+  }, [refresh]);
 
   return (
     <>
@@ -79,7 +88,7 @@ export default function App() {
       </header>
       {experience === "customer" ? (
         <main className="customer-main">
-          <CustomerChat onActivity={refresh} />
+          <CustomerChat onActivity={refreshFromCustomer} />
         </main>
       ) : <main>
         <Sidebar

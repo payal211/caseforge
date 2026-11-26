@@ -6,9 +6,11 @@ from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from ..core.orchestrator import Orchestrator
+from ..core.llm import LLMError
+from ..harness.loop import AgentLoopError
 from ..demo_attacks import ATTACKS, catalogue, run_attack
 from ..packs import load_packs
 from .cx import build_router as build_cx_router
@@ -33,6 +35,14 @@ class DecisionIn(BaseModel):
     note: str = ""
     override_action: Optional[str] = None
 
+    @field_validator("reviewer")
+    @classmethod
+    def reviewer_must_be_named(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("reviewer name is required")
+        return value
+
 
 @app.get("/health")
 def health():
@@ -43,7 +53,14 @@ def health():
 
 @app.get("/domains")
 def domains():
-    return [{"name": p.name, "title": p.title, "subjects": p.list_subjects()} for p in orch.packs.values()]
+    return [{
+        "name": p.name,
+        "title": p.title,
+        "description": p.description,
+        "objective": p.objective,
+        "scenarios": list(p.scenario_guides),
+        "subjects": p.list_subjects(),
+    } for p in orch.packs.values()]
 
 
 @app.post("/cases")
@@ -52,6 +69,8 @@ def create_case(body: NewCase):
         return orch.investigate(body.domain, body.subject_id)
     except KeyError as e:
         raise HTTPException(404, f"not found: {e}")
+    except (AgentLoopError, LLMError) as e:
+        raise HTTPException(503, f"investigation agent unavailable: {e}")
 
 
 @app.get("/cases")

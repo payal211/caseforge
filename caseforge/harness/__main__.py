@@ -49,7 +49,7 @@ def main(argv: list[str]) -> int:
         for r in res:
             print(f"{'PASS' if r['pass'] else 'FAIL'}  {r['name']}" + ("" if r["pass"] else f"   ({r['detail']})"))
         good = all(r["pass"] for r in res)
-        print("\nsandbox is safe to enable: set CASEFORGE_SANDBOX=on and CASEFORGE_AGENTIC=on" if good else "\ndo NOT enable the sandbox until every line passes")
+        print("\nsandbox utility is ready: set CASEFORGE_SANDBOX=on" if good else "\ndo NOT enable the sandbox until every line passes")
         return 0 if good else 1
     if argv[:1] == ["evals"]:
         return evals_main()

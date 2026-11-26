@@ -2,9 +2,10 @@
 
 ## Use case
 A bank customer chats with a **customer-experience agent** about a card charge they don't recognise.
-The agent opens a dispute in **CaseForge**, which runs the multi-agent investigation (evidence, policy
-retrieval, guardrails, risk score). A **human fraud analyst** approves or overrides. Only then is the
-outcome released back to the customer through the same agent.
+The agent opens a dispute in **CaseForge**, whose supervisor routes a multi-agent investigation to
+fraud-forensics and policy-analysis workers over scoped MCP tools. Deterministic rules calculate risk,
+and a critic validates worker notes. A **human fraud analyst** approves or overrides. Only then is
+the outcome released back to the customer through the same agent.
 
 ```
 Customer ─chat─▶ GECX-style agent (Google ADK) ──HTTP /cx──▶ CaseForge ──▶ analyst console (/ui)
@@ -13,13 +14,20 @@ Customer ─chat─▶ GECX-style agent (Google ADK) ──HTTP /cx──▶ Cas
                         check_dispute_status       ◀─ customer-safe status ─┘
 ```
 
+The GECX agent is the customer-facing entry point for BFSI disputes. Opening a dispute calls the
+shared CaseForge workflow, which routes to its domain workers and returns only a customer-safe
+reference/status. The analyst console remains a separate human-review surface. The shared workers
+also serve the claims and manufacturing workflows, which are currently initiated from the analyst
+console/API rather than the BFSI customer agent. See [ARCHITECTURE.md](../ARCHITECTURE.md) for
+agent roles, scenario objectives, audit traces, and future scope.
+
 ## Design rules (enforced in `caseforge/api/cx.py`, covered by `tests/test_cx_channel.py`)
 | Rule | How |
 |---|---|
 | Agent can open and track, never decide | `/cx` has no approve/reject route; only `/cases/{id}/decision` decides |
 | No cross-account access | Ownership checked server-side; account comes from session state, not chat text; "not yours" and "doesn't exist" look identical |
 | No internal leakage | Customer sees only `reference`, `status`, `customer_message`; score, evidence, flags stay internal |
-| Outcome only after a human | Approved text is released only once status is approved; reject/override shows "specialist will contact you" and never leaks the AI recommendation |
+| Outcome only after a human | Approved or not-approved status is released only after a human decision; override shows "specialist will contact you" and never leaks the AI recommendation |
 | Customer text is untrusted | Scanned by the existing guardrails, redacted in the audit trail, never touches the score |
 
 ## Run it
@@ -50,16 +58,15 @@ not the customer chat interface.
 
 **With Gemini:** `export GOOGLE_API_KEY=...` (optionally `GECX_MODEL=...`) and rerun. Same tools, same instruction.
 
-**With Ollama (Windows PowerShell):** use an installed model that advertises tool support.
+**With Ollama (Windows Command Prompt):** use an installed model that advertises tool support.
 For example, `ollama show llama3.1:latest` should list `tools` under Capabilities.
 The installed `llama3.1:latest` model on this machine does so. Gemma has not been checked
 because it is not installed here.
 In the terminal used to run the demo:
-```powershell
-$env:LLM_MODE = "auto"
-$env:OLLAMA_MODEL = "llama3.1:latest"
-$env:GECX_PROVIDER = "ollama"
-$env:GECX_MODEL = "llama3.1:latest"
+```bat
+set "OLLAMA_MODEL=llama3.1:latest"
+set "GECX_PROVIDER=ollama"
+set "GECX_MODEL=llama3.1:latest"
 python gecx/demo.py
 ```
 `OLLAMA_MODEL` selects the model for CaseForge's investigation summaries; `GECX_MODEL`

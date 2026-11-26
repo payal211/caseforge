@@ -37,9 +37,11 @@ async def open_dispute(transaction_id: str, customer_statement: str, tool_contex
         transaction_id: The transaction ID, e.g. TXN-9001.
         customer_statement: The customer's own words about why they dispute it, verbatim.
 
-    Returns a dispute reference and a customer-safe status. The outcome is decided by a human
-    reviewer later; never promise a refund or a result.
+    Returns the existing dispute if one is already recorded for this transaction, otherwise opens
+    one for analyst review. Relay its customer_message; never promise a refund or a result.
     """
+    tool_context.state["last_dispute_reference"] = None
+    tool_context.state["last_dispute_message"] = None
     acc = _account(tool_context)
     if not acc:
         return {"error": "customer is not authenticated"}
@@ -51,6 +53,7 @@ async def open_dispute(transaction_id: str, customer_statement: str, tool_contex
         r.raise_for_status()
         out = r.json()
     tool_context.state["last_dispute_reference"] = out["reference"]
+    tool_context.state["last_dispute_message"] = out["customer_message"]
     return out
 
 
@@ -59,6 +62,8 @@ async def check_dispute_status(reference: str, tool_context: ToolContext) -> dic
 
     Relay `customer_message` to the customer exactly as written.
     """
+    tool_context.state["last_dispute_reference"] = None
+    tool_context.state["last_dispute_message"] = None
     acc = _account(tool_context)
     if not acc:
         return {"error": "customer is not authenticated"}
@@ -71,4 +76,7 @@ async def check_dispute_status(reference: str, tool_context: ToolContext) -> dic
         if r.status_code == 404:
             return {"error": "No dispute with that reference was found on this account."}
         r.raise_for_status()
-        return r.json()
+        out = r.json()
+    tool_context.state["last_dispute_reference"] = out["reference"]
+    tool_context.state["last_dispute_message"] = out["customer_message"]
+    return out

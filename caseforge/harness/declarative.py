@@ -10,7 +10,7 @@ import yaml
 
 from ..core.connectors import CsvConnector, ParquetConnector, make_connector
 from ..core.schema import Analysis, Citation, Evidence
-from ..packs.base import DomainPack
+from ..packs.base import DomainPack, weighted_score
 
 RULE_TYPES = {"zscore", "new_value", "count_window", "shared_across", "time_of_day", "threshold", "differs_from_entity"}
 OPS = {">": lambda a, b: a > b, ">=": lambda a, b: a >= b, "<": lambda a, b: a < b,
@@ -74,6 +74,16 @@ class DeclarativePack(DomainPack):
             raise ValueError(f"invalid pack at {root}: " + "; ".join(errs))
         self.spec, self.root = spec, Path(root)
         self.name, self.title = spec["name"], spec["title"]
+        self.description = spec.get("description", "")
+        self.objective = spec.get("objective", "")
+        self.scenario_guides = tuple(
+            {
+                "subject_id": str(item["subject"]),
+                "title": item.get("title", str(item["subject"])),
+                "why": item.get("why", ""),
+            }
+            for item in spec.get("scenarios", [])
+        )
         self.baseline_manual_minutes = int(spec.get("baseline_manual_minutes", 30))
         self.jev_question = spec.get("second_opinion_question", "Do these facts indicate a problem that needs action?")
         self.scenarios = spec.get("scenarios", [])
@@ -170,12 +180,13 @@ class DeclarativePack(DomainPack):
         return f"{self.spec.get('policy_keywords', '')} {ctx.get('keywords', '')} escalation thresholds"
 
     def reason(self, evidence, ctx, citations):
-        score = min(100.0, sum(e.weight for e in evidence))
+        bands = [{"minimum": action["min"], "recommendation": action["action"]} for action in self.spec["actions"]]
+        score, score_breakdown = weighted_score(evidence, bands)
         action = next(a["action"] for a in sorted(self.spec["actions"], key=lambda a: -a["min"]) if score >= a["min"])
         reasoning = [f"{e.signal}: {e.detail} (+{e.weight:g})" for e in evidence if e.weight > 0] or ["No risk signals triggered."]
         if citations:
             reasoning.append(f"Policy basis: {citations[0].doc} / {citations[0].section}.")
-        return Analysis(risk_score=score, action=action, reasoning=reasoning)
+        return Analysis(risk_score=score, action=action, reasoning=reasoning, score_breakdown=score_breakdown)
 
     def draft_artifacts(self, subject_id, evidence, ctx, analysis, citations):
         out = {}

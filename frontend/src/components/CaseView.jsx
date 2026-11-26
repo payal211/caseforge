@@ -57,8 +57,34 @@ function WorkOrder({ wo, parts }) {
   );
 }
 
+function ScoreBreakdown({ breakdown }) {
+  if (!breakdown?.formula) return null;
+  return (
+    <Card title="How the risk score is calculated">
+      <p>{breakdown.formula}: <b>{breakdown.raw_total}</b> raw points, capped at <b>{breakdown.cap}</b>.</p>
+      {breakdown.signals?.length ? (
+        <table>
+          <thead><tr><th>Signal</th><th>Points</th><th>Evidence</th></tr></thead>
+          <tbody>{breakdown.signals.map((signal, index) => (
+            <tr key={`${signal.signal}-${index}`}>
+              <td className="mono">{signal.signal}</td>
+              <td>+{signal.points}</td>
+              <td>{signal.detail}</td>
+            </tr>
+          ))}</tbody>
+        </table>
+      ) : <p>No weighted signals contributed points.</p>}
+      <h3>Recommendation bands</h3>
+      <ul>{breakdown.action_bands?.map((band, index) => (
+        <li key={`${band.minimum}-${index}`}>Score ≥ {band.minimum}: {band.recommendation}</li>
+      ))}</ul>
+      <p className="chip">Rules calculate the score. The LLM can only provide cited investigation notes; an analyst makes the decision.</p>
+    </Card>
+  );
+}
+
 function DecisionPanel({ c, onDecided }) {
-  const [reviewer, setReviewer] = useState("analyst");
+  const [reviewer, setReviewer] = useState("");
   const [note, setNote] = useState("");
   const [override, setOverride] = useState("");
   const [showOverride, setShowOverride] = useState(false);
@@ -70,6 +96,7 @@ function DecisionPanel({ c, onDecided }) {
     return (
       <Card title="Decision">
         <div className="stamp" style={{ color }}>{LABEL[c.status]}</div>
+        <p className="chip">This status describes the analyst's decision on CaseForge's recommendation. The final action and customer message below show the actual dispute outcome.</p>
         <p style={{ margin: 0 }}>
           <b>{d.reviewer}</b>: {d.final_action}
           {d.note && <><br /><span className="chip">Note: {d.note}</span></>}
@@ -79,9 +106,13 @@ function DecisionPanel({ c, onDecided }) {
   }
   const decide = async (outcome) => {
     if (outcome === "override" && !showOverride) return setShowOverride(true);
+    if (!reviewer.trim()) {
+      setErr("Enter the analyst name to record this demo decision.");
+      return;
+    }
     try {
       await api(`/cases/${c.case_id}/decision`, "POST", {
-        reviewer: reviewer || "analyst", outcome, note, override_action: override || null,
+        reviewer: reviewer.trim(), outcome, note, override_action: override || null,
       });
       await onDecided();
     } catch (e) {
@@ -90,8 +121,9 @@ function DecisionPanel({ c, onDecided }) {
   };
   return (
     <Card title="Decision">
+      <p className="chip">Enter your name to record the demo decision. This field is not sign-in or verified analyst authentication.</p>
       <div className="decide">
-        <input aria-label="Reviewer name" placeholder="Your name" value={reviewer} onChange={(e) => setReviewer(e.target.value)} />
+        <input aria-label="Reviewer name" placeholder="Analyst name (demo identity, not authentication)" value={reviewer} onChange={(e) => setReviewer(e.target.value)} />
         <input aria-label="Note" placeholder="Note for the audit log (optional)" value={note} onChange={(e) => setNote(e.target.value)} />
         {showOverride && (
           <input autoFocus aria-label="Override action" placeholder="Override: type the action you want instead"
@@ -155,6 +187,8 @@ export default function CaseView({ id, attack, onChanged }) {
         </span>
       </Card>
 
+      <ScoreBreakdown breakdown={c.score_breakdown} />
+
       {so?.available && (
         <Card title="Second opinion">
           <p style={{ margin: 0 }}>
@@ -170,15 +204,33 @@ export default function CaseView({ id, attack, onChanged }) {
         <Card title="Agent investigation (advisory)">
           <p style={{ marginTop: 0 }}>
             <span className="pill">{c.agent_run.status}</span>{" "}
-            <span className="chip">{c.agent_run.tool_calls} tool call(s), {c.agent_run.steps_used} step(s). Read-only tools; cannot change the score or approve.</span>
+            <span className="chip">{c.agent_run.tool_calls} MCP tool call(s), {c.agent_run.steps_used} step(s). Read-only tools; cannot change the score or approve.</span>
           </p>
+          {!!c.agent_run.workers?.length && (
+            <div className="trace">
+              {c.agent_run.workers.map((worker) => (
+                <span key={worker.name}>
+                  <b>{worker.name}</b> · {worker.status} · {worker.tool_calls} tool(s)
+                  {worker.objective && <small>Objective: {worker.objective}</small>}
+                </span>
+              ))}
+            </div>
+          )}
+          {c.agent_run.critic && (
+            <p className="chip">Deterministic evaluator: {c.agent_run.critic.status} · {c.agent_run.critic.accepted} finding(s) accepted, {c.agent_run.critic.rejected} rejected.</p>
+          )}
           {c.agent_run.notes.length ? (
-            <ul>{c.agent_run.notes.map((n, i) => <li key={i}>{n.text} <span className="chip mono">[{n.evidence.join(", ")}]</span></li>)}</ul>
+            <ul>{c.agent_run.notes.map((n, i) => <li key={i}><b>{n.worker}:</b> {n.text} <span className="chip mono">[{n.evidence.join(", ")}]</span></li>)}</ul>
           ) : <p className="chip">No grounded notes were produced.</p>}
           <details>
-            <summary>Agent trace</summary>
+            <summary>Tool and execution trace (concise evidence trail, not private model reasoning)</summary>
             {c.agent_run.trace.map((t, i) => (
-              <div className="chip mono" key={i}>{t.step}. {t.kind}{t.tool ? ` ${t.tool}` : ""}{t.redactions ? ` (${t.redactions} redaction(s))` : ""}</div>
+              <div className="trace-event" key={i}>
+                <b>{t.worker}</b> · step {t.step} · {t.kind}{t.tool ? ` · ${t.tool}` : ""}
+                {t.ok === true ? " · succeeded" : t.ok === false ? " · failed" : ""}
+                {t.summary && <small>{t.summary}</small>}
+                {t.redactions > 0 && <small>{t.redactions} redaction(s)</small>}
+              </div>
             ))}
           </details>
         </Card>
@@ -215,7 +267,7 @@ export default function CaseView({ id, attack, onChanged }) {
       )}
 
       <Card title="Agent trace">
-        <div className="trace">{steps.map((s, i) => <span key={i}>{s.event.slice(6)} · {s.data.seconds}s</span>)}</div>
+        <div className="trace">{steps.map((s, i) => <span key={i}>{s.event.slice(6)} · {s.data.seconds ?? "—"}s · produced {s.data.produced?.join(", ") || "worker activity"}</span>)}</div>
       </Card>
 
       <DecisionPanel c={c} onDecided={async () => { await load(); await onChanged(); }} />

@@ -6,6 +6,7 @@ import pytest
 
 from caseforge import doctor
 from caseforge.core import config
+from caseforge.core.llm import LLM, LLMError
 
 GOOD = "Transaction TXN-9001 scored 100/100 on device and velocity signals. A human must approve the recommended block and refund."
 
@@ -19,8 +20,25 @@ def fake_ollama(models, reply):
             self.send_header("Content-Length", str(len(body))); self.end_headers(); self.wfile.write(body)
         def do_GET(self): self._send({"models": [{"name": m} for m in models]})
         def do_POST(self):
-            self.rfile.read(int(self.headers["Content-Length"]))
-            self._send({"response": reply})
+            request = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+            if self.path.endswith("/api/chat"):
+                prompt = request["messages"][-1]["content"]
+                if "[T1] RESULT" in prompt:
+                    message = {"content": '{"final":{"notes":[{"text":"Reviewed evidence.","evidence":["T1"]}]}}'}
+                elif "REQUIRED TOOLS: lookup" in prompt:
+                    message = {"content": "", "tool_calls": [{"function": {
+                        "name": "lookup",
+                        "arguments": {"source": "transactions", "field": "account_id", "value": "ACC-1001"},
+                    }}]}
+                else:
+                    message = {"content": "", "tool_calls": [{"function": {
+                        "name": "search_documents", "arguments": {"query": "policy"},
+                    }}]}
+                self._send({"message": message})
+                return
+            prompt = request.get("prompt", "")
+            answer = reply
+            self._send({"response": answer})
     srv = HTTPServer(("127.0.0.1", 0), H)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     return srv
@@ -28,7 +46,7 @@ def fake_ollama(models, reply):
 
 @pytest.fixture()
 def live(monkeypatch, tmp_path):
-    monkeypatch.setattr(config, "LLM_MODE", "auto")
+    monkeypatch.setattr(config, "LLM_MODE", "required")
     monkeypatch.setattr(config, "OLLAMA_MODEL", "llama3.1:8b")
     servers = []
 
@@ -49,6 +67,18 @@ def test_environment_and_packs_pass(monkeypatch):
 def test_mock_mode_is_a_warning_not_a_failure(monkeypatch):
     monkeypatch.setattr(config, "LLM_MODE", "mock")
     assert [r.level for r in doctor.check_ollama()] == ["WARN"]
+
+
+def test_required_llm_mode_surfaces_ollama_errors(monkeypatch):
+    monkeypatch.setattr(config, "LLM_MODE", "required")
+
+    def unavailable(*args, **kwargs):
+        import httpx
+        raise httpx.ConnectError("connection refused")
+
+    monkeypatch.setattr("caseforge.core.llm.httpx.post", unavailable)
+    with pytest.raises(LLMError, match="Ollama request failed"):
+        LLM().generate("system", "prompt")
 
 
 def test_ollama_down_and_model_missing_have_actionable_hints(live, monkeypatch):

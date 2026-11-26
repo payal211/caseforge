@@ -2,11 +2,12 @@
 
 CaseForge is a shared investigation platform for operational risk decisions. It combines evidence gathering, retrieval, guardrails, reasoning, and an approval workflow so a human reviewer can decide with a clear audit trail.
 
-Built around two domain packs:
+Built around three domain packs:
 - **BFSI**: fraud and dispute investigation across transactions, identity/device signals, and policy documents.
+- **Insurance claims**: claim-history triage using a declarative YAML pack and claims-policy documents.
 - **Manufacturing**: predictive maintenance root-cause analysis using sensor signals, manuals, and work-order context.
 
-The pipeline is: gather -> retrieve -> reason -> draft -> human approval. It can run without an LLM using deterministic fallbacks, and it can use Ollama when available.
+The pipeline is: gather evidence -> retrieve policy -> calculate a deterministic score -> investigate with an LLM through case-scoped MCP tools -> draft -> human approval. Ollama is required for live investigations; mock mode is reserved for tests.
 
 The harness is the operational safety layer behind the platform. It does not replace the business rules or the human reviewer — it makes sure new risk logic can be added, tested, and trusted before it is used in live decisions.
 
@@ -61,6 +62,13 @@ The terminal-only `python gecx/demo.py` remains available as a separate scripted
 ## What the project does
 CaseForge creates a case file for a domain subject, gathers evidence, checks for suspicious or poisoned inputs, and produces a recommendation with citations and artifacts. Each case is saved with decision state and audit records.
 
+### Where the risk score comes from
+Domain rules assign points to evidence signals; CaseForge sums the points and caps the score at 100.
+For example, the BFSI sample `TXN-9001` has 105 raw points, so its displayed score is 100.
+The analyst console and case API show the raw total, cap, each contributing signal, and the score bands
+that map to recommendations. The LLM only adds cited investigation findings: it cannot set the score,
+change the recommendation, or approve/reject the case.
+
 ## Architecture
 
 CaseForge follows a layered design:
@@ -103,9 +111,10 @@ CaseForge follows a layered design:
 
 Core responsibilities:
 - Domain packs define how a business area behaves and what data to inspect.
-- The orchestrator manages the investigation workflow from evidence collection to recommendation.
+- The LangGraph supervisor manages the investigation state and routes cases to domain-specialist workers.
+- Specialist workers call read-only, scoped tools through a per-case MCP server; a deterministic evaluator checks their notes.
 - Guardrails flag suspicious or adversarial content before it can influence decisions.
-- The audit layer records every significant event so decisions are explainable and reviewable.
+- The audit layer records routing, worker stages, tool traces, and human decisions so investigations are reviewable.
 - The API and UI provide the human decision layer for approve, reject, or override actions.
 - The harness validates new packs, scenarios, and edge cases before operational rollout.
 
@@ -148,31 +157,34 @@ GET /cases/{id}/audit
 GET /metrics
 ```
 
-## Optional integrations
-### Ollama
+## Model and integrations
+### Required local LLM
 ```bash
+ollama pull llama3.1:8b
 ollama show llama3.1:latest
 ```
 
-Ollama should list `tools` under the model's capabilities before you use it with the GECX
-customer agent. Your installed `llama3.1:latest` is an 8B model and reports tool support.
-Gemma is not installed in this checkout's Ollama environment, so its tool support has not
-been verified.
+The CaseForge investigation workers use Ollama's native tool-calling API with typed tools
+discovered from their per-case MCP server. Run `ollama show <model>` and confirm its capabilities
+include `tools` before selecting a model. The same check applies to the customer-facing ADK agent.
 
-On Windows PowerShell, select the installed model and run the core app:
-```powershell
-$env:LLM_MODE = "auto"
+On Windows Command Prompt, select the model and run the core app:
+```bat
+set "OLLAMA_MODEL=llama3.1:8b"
 python -m caseforge.doctor
 python -m caseforge.cli
 uvicorn caseforge.api.main:app --reload
 ```
 
-CaseForge uses Ollama for its investigation summaries. To use the same local model for
-the optional Google ADK customer agent too, install the dependencies from
-`requirements.txt`, then set these variables before starting the agent:
-```powershell
-$env:GECX_PROVIDER = "ollama"
-$env:GECX_MODEL = "llama3.1:latest"
+`LLM_MODE` defaults to `required`, so an unavailable model or broken MCP agent fails the
+investigation visibly instead of silently substituting mock output. `LLM_MODE=mock` is only
+for deterministic tests and the explicitly scripted offline demo.
+
+To use the same local model for the Google ADK customer agent, set these variables before
+starting the app in Windows Command Prompt:
+```bat
+set "GECX_PROVIDER=ollama"
+set "GECX_MODEL=llama3.1:latest"
 python gecx/demo.py
 ```
 The GECX agent uses LiteLLM to call Ollama; `GECX_MODEL` selects its model, while
@@ -199,17 +211,24 @@ The project includes built-in guardrail checks for prompt injection, poisoned do
 python -m caseforge.mcp_server
 ```
 
-This exposes a stdio protocol for tools such as `list_domains`, `investigate_case`, `get_case`, and `get_audit_trail` without exposing a direct approval tool.
+This exposes a stdio protocol for tools such as `list_domains`, `investigate_case`, `get_case`, and `get_audit_trail` without exposing a direct approval tool. During live investigations, the LLM agent uses a separate per-case MCP stdio server with read-only evidence, policy-search, and account/entity-scoped lookup tools.
 
 ## Profiles and packs
 Use the existing packs or add a new domain by creating a package under `caseforge/packs/<name>/` and exposing a `PACK` object.
 
 ## Testing and validation
 ```bash
-LLM_MODE=mock python -m pytest -q
+python -m caseforge.harness evals
+```
+
+On Windows Command Prompt, run deterministic tests with:
+```bat
+set "LLM_MODE=mock"
+python -m pytest -q
 ```
 
 ## Additional docs
+- [ARCHITECTURE.md](ARCHITECTURE.md) — end-to-end layers, agent roles, domain scenarios, logs, limitations, and future scope
 - [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)
 - [GUARDRAILS.md](GUARDRAILS.md)
 - [OPENJEV.md](OPENJEV.md)
@@ -223,4 +242,4 @@ LLM_MODE=mock python -m pytest -q
 
 
 ## GECX customer-channel integration
-A customer-facing agent built with Google ADK (GECX-style) can open and track disputes through the customer-safe `/cx` API. See [gecx/README.md](gecx/README.md); run `python gecx/demo.py`.
+A customer-facing agent built with Google ADK (GECX-style) can open and track disputes through the customer-safe `/cx` API. Opening a dispute triggers the CaseForge supervisor and domain workers; GECX does not itself make analyst decisions. See [gecx/README.md](gecx/README.md) and [ARCHITECTURE.md](ARCHITECTURE.md); run `python gecx/demo.py`.

@@ -38,6 +38,7 @@ class Analysis(BaseModel):
     risk_score: float
     action: str
     reasoning: list[str]
+    score_breakdown: dict[str, Any] = Field(default_factory=dict)
 
 
 class Decision(BaseModel):
@@ -55,6 +56,7 @@ class CaseFile(BaseModel):
     status: Status = Status.PENDING_APPROVAL
     created_at: datetime = Field(default_factory=now)
     risk_score: float
+    score_breakdown: dict[str, Any] = Field(default_factory=dict)
     recommended_action: str
     summary: str
     reasoning: list[str]

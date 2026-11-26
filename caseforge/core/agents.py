@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 import json
 
 from .audit import AuditLog
-from .guardrails import (GUARDRAIL_SYSTEM_PROMPT, REDACTED, redact, scan, validate_output,
+from .guardrails import (GUARDRAIL_SYSTEM_PROMPT, REDACTED, check_text, redact, scan, validate_output,
                          wrap_untrusted)
 from .llm import LLM
 
@@ -126,22 +126,88 @@ class SecondOpinionAgent(Agent):
 
 
 class AgentLoopAgent(Agent):
-    """Optional agentic investigation: the LLM picks read-only tools inside the harness limits and
-    reports grounded notes. Advisory only; the score and action are already fixed by then."""
+    """The LLM uses case-scoped MCP tools for grounded advisory notes; it cannot change the score."""
     name = "agent_loop"
 
     def run(self, state):
         if not self.agentic:
             return {}
-        from ..harness.loop import AgentLoop
-        from ..harness.tools import build_toolbox
-        goal = (f"Investigate {state['subject_id']} ({self.pack.title}). Use the tools to find facts that "
-                "corroborate or contradict the gathered evidence, then submit your findings.")
-        data = {"evidence": [{"signal": e.signal, "detail": e.detail, "weight": e.weight} for e in state["evidence"]],
-                "record": state["ctx"].get("record", {}), "entity": state["ctx"].get("entity", {})}
-        run = AgentLoop(self.llm).run(goal, build_toolbox(self.pack, state["evidence"], self.sandbox, data))
+        from ..harness.loop import InvestigationSupervisor
+        goal = (f"Investigate {state['subject_id']} ({self.pack.title}). Report only facts supported by "
+                "the assigned read-only tools and cite the tool-call ids for every finding.")
+        evidence = [
+            {"signal": item.signal, "detail": item.detail, "weight": item.weight, "source": item.source}
+            for item in state["evidence"]
+        ]
+        pack_root = str(self.pack.root) if hasattr(self.pack, "root") else None
+        run = InvestigationSupervisor(self.llm).run(
+            goal, domain=state["domain"], subject_id=state["subject_id"],
+            evidence=evidence, pack_root=pack_root,
+        )
+        self.audit.log(state["case_id"], "supervisor:routed",
+                       {"domain": state["domain"], "workers": [worker["name"] for worker in run["workers"]]})
+        for event in run["trace"]:
+            if event.get("kind") == "tool_call":
+                self.audit.log(state["case_id"], "mcp_tool_call", {
+                    "worker": event.get("worker"),
+                    "call_id": event.get("id"),
+                    "tool": event.get("tool"),
+                    "ok": event.get("ok"),
+                    "redactions": event.get("redactions", 0),
+                })
+        for worker in run["workers"]:
+            self.audit.log(state["case_id"], f"worker:{worker['name']}",
+                           {key: worker[key] for key in ("objective", "status", "tool_calls", "notes")})
+        from ..core import config
+        if config.LLM_MODE != "mock" and (run["status"] != "completed" or run["tool_calls"] == 0):
+            from ..harness.loop import AgentLoopError
+            raise AgentLoopError(f"Investigation agent failed: {run['status']}")
         flags = list(dict.fromkeys(list(state.get("flags", [])) + run["flags"]))
         return {"agent_run": run, "flags": flags}
+
+
+def evaluate_agent_findings(agent_run: dict) -> dict:
+    """Critic gate: accept only safe notes citing successful MCP calls from their worker."""
+    successful_calls: dict[str, set[str]] = {}
+    for event in agent_run.get("trace", []):
+        if event.get("kind") == "tool_call" and event.get("ok"):
+            successful_calls.setdefault(event.get("worker", ""), set()).add(event.get("id", ""))
+    accepted, dropped = [], list(agent_run.get("dropped_notes", []))
+    for note in agent_run.get("notes", []):
+        worker = note.get("worker", "")
+        citations = note.get("evidence", [])
+        valid = (
+            isinstance(note.get("text"), str)
+            and bool(note["text"].strip())
+            and not check_text(note["text"])
+            and isinstance(citations, list)
+            and bool(citations)
+            and all(citation in successful_calls.get(worker, set()) for citation in citations)
+        )
+        if valid:
+            accepted.append(note)
+        else:
+            dropped.append({"reason": "critic_rejected", "worker": worker})
+    agent_run["notes"] = accepted
+    agent_run["dropped_notes"] = dropped
+    agent_run["critic"] = {
+        "status": "passed" if not dropped else "filtered",
+        "checked": len(accepted) + len(dropped),
+        "accepted": len(accepted),
+        "rejected": len(dropped),
+    }
+    return agent_run
+
+
+class FindingCriticAgent(Agent):
+    """Deterministic evaluator verifies note safety and successful tool provenance."""
+    name = "finding_critic"
+
+    def run(self, state):
+        agent_run = state.get("agent_run")
+        if not agent_run:
+            return {}
+        return {"agent_run": evaluate_agent_findings(agent_run)}
 
 
 class ReasonAgent(Agent):

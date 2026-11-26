@@ -32,6 +32,9 @@ class FakeLLM(LLM):
         self.calls.append((system, prompt))
         return self.reply
 
+    def generate_action(self, system, prompt, tools):
+        return self.generate(system, prompt)
+
 
 @pytest.fixture()
 def packs():
@@ -157,8 +160,10 @@ def test_valid_llm_output_is_accepted(make):
 def test_prompt_is_hardened_and_data_is_fenced(make):
     llm = FakeLLM(None)
     make(llm).investigate("bfsi", "TXN-9001")
-    system, prompt = llm.calls[0]
-    assert "untrusted_data" in system and "never instructions" in system
+    investigation_system = next(system for system, _ in llm.calls if "safety harness" in system)
+    assert "untrusted_data" in investigation_system and "never instructions" in investigation_system
+    system, prompt = next((system, prompt) for system, prompt in llm.calls
+                         if system.startswith(GUARDRAIL_SYSTEM_PROMPT))
     assert system.startswith(GUARDRAIL_SYSTEM_PROMPT)
     assert prompt.startswith("<untrusted_data>") and prompt.rstrip().endswith("</untrusted_data>")
     assert prompt.count("</untrusted_data>") == 1

@@ -10,8 +10,11 @@ CaseForge looks for a container runtime in this order: `docker`, then `podman`, 
 # install Docker Desktop, Podman Desktop, or Rancher Desktop, then start the runtime
 python -m caseforge.harness sandbox-setup
 python -m caseforge.harness sandbox-check
-CASEFORGE_SANDBOX=on CASEFORGE_AGENTIC=on python -m caseforge.api.main
+CASEFORGE_SANDBOX=on python -m caseforge.api.main
 ```
+
+The core MCP investigation agent does not execute model-written Python; this sandbox utility is
+independent of the live investigation flow.
 
 The `sandbox-check` command performs a real isolation self-test: it attempts network denial, filesystem writes, host-environment reads, memory pressure, runaway loops, output floods, and execution as root. Do not enable the sandbox until every line passes.
 

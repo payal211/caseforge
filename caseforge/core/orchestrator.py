@@ -1,4 +1,3 @@
-import os
 import time
 import uuid
 from typing import Any, TypedDict
@@ -6,8 +5,8 @@ from typing import Any, TypedDict
 from langgraph.graph import END, START, StateGraph
 
 from . import config
-from .agents import (AgentLoopAgent, DraftAgent, GatherAgent, GuardAgent, ReasonAgent, RetrieveAgent,
-                     SecondOpinionAgent)
+from .agents import (AgentLoopAgent, DraftAgent, FindingCriticAgent, GatherAgent, GuardAgent, ReasonAgent,
+                     RetrieveAgent, SecondOpinionAgent)
 from .jev import JevClient
 from .audit import AuditLog, make_audit
 from .llm import LLM
@@ -33,7 +32,7 @@ class State(TypedDict, total=False):
 
 class Orchestrator:
     def __init__(self, packs: dict, store: CaseStore | None = None,
-                 audit: AuditLog | None = None, llm: LLM | None = None, jev: JevClient | None = None, agentic: bool | None = None, sandbox=None):
+                 audit: AuditLog | None = None, llm: LLM | None = None, jev: JevClient | None = None, agentic: bool = True, sandbox=None):
         self.packs = packs
         self.store = store or make_store()
         self.audit = audit or make_audit()
@@ -41,12 +40,12 @@ class Orchestrator:
         self.sandbox = sandbox if sandbox is not None else Sandbox.from_env()
         self.llm = llm or LLM()
         self.jev = jev if jev is not None else JevClient.from_env()
-        self.agentic = agentic if agentic is not None else os.getenv("CASEFORGE_AGENTIC", "off").lower() in {"on", "1", "true"}
+        self.agentic = agentic
 
     def _graph(self, pack):
         a = (pack, self.llm, self.audit, self.jev, self.agentic, self.sandbox)
         agents = [GatherAgent(*a), RetrieveAgent(*a), GuardAgent(*a), ReasonAgent(*a),
-                  SecondOpinionAgent(*a), AgentLoopAgent(*a), DraftAgent(*a)]
+                  SecondOpinionAgent(*a), AgentLoopAgent(*a), FindingCriticAgent(*a), DraftAgent(*a)]
         g = StateGraph(State)
         for a in agents:
             g.add_node(a.name, a)
@@ -72,7 +71,9 @@ class Orchestrator:
                              f"({len(flags)} flag(s)). It did not affect the score or action; a human must decide.")
         case = CaseFile(
             case_id=case_id, domain=domain, subject_id=subject_id,
-            risk_score=an.risk_score, recommended_action=an.action, reasoning=reasoning, guardrail_flags=flags, second_opinion=out.get("second_opinion"), agent_run=out.get("agent_run"),
+            risk_score=an.risk_score, score_breakdown=an.score_breakdown,
+            recommended_action=an.action, reasoning=reasoning, guardrail_flags=flags,
+            second_opinion=out.get("second_opinion"), agent_run=out.get("agent_run"),
             summary=out["summary"], evidence=out["evidence"], citations=out["citations"],
             artifacts=out["artifacts"], llm_used=out["llm_used"],
             investigation_seconds=round(time.perf_counter() - t0, 2),

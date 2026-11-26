@@ -1,6 +1,8 @@
 # Insurance claims triage. An entire industry pack with no Python.
 name: claims
 title: Insurance claim triage
+description: Reviews suspicious insurance claims against policy history, claim patterns, provider details, and policy guidance.
+objective: Help an adjuster prioritize documentation or special investigation; the system recommends and drafts but does not approve or pay claims.
 baseline_manual_minutes: 40        # ASSUMPTION: replace with measured adjuster time
 id_field: claim_id
 entity_field: policy_id
@@ -44,7 +46,7 @@ artifacts:
       - {min: 40, template: "Dear {entity_holder}, we need supporting documents for claim {subject_id} ({description}). Please upload them within 10 days."}
       - {min: 0,  template: "Dear {entity_holder}, claim {subject_id} ({description}) has been cleared for standard payment processing."}
 scenarios:
-  - {subject: CLM-9001, expect: high, why: "burst of claims, new provider, shared payout account"}
-  - {subject: CLM-9003, expect: mid,  why: "high value but known provider and home state"}
-  - {subject: CLM-9002, expect: low,  why: "routine repair"}
+  - {subject: CLM-9001, title: "High-risk claim cluster", expect: high, why: "Claim burst, new provider, and shared payout account trigger special investigation."}
+  - {subject: CLM-9003, title: "High-value claim", expect: mid, why: "High amount triggers senior review, while familiar provider and home-state filing moderate risk."}
+  - {subject: CLM-9002, title: "Routine repair", expect: low, why: "No weighted fraud signals; demonstrates a standard-processing recommendation."}
 untrusted_fields: [description]

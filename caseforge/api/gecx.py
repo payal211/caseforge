@@ -66,6 +66,21 @@ def build_router(orch) -> APIRouter:
             ) from exc
         if not reply:
             raise HTTPException(502, "The customer assistant returned no response.")
-        return {"reply": reply, "activities": activities}
+        dispute_reference = None
+        customer_message = None
+        if {"open_dispute", "check_dispute_status"}.intersection(activities):
+            adk_session = await runner.session_service.get_session(
+                app_name=runner.app_name,
+                user_id=account_id,
+                session_id=adk_session_id,
+            )
+            dispute_reference = adk_session.state.get("last_dispute_reference")
+            customer_message = adk_session.state.get("last_dispute_message")
+        return {
+            "reply": reply,
+            "activities": activities,
+            "dispute_reference": dispute_reference,
+            "customer_message": customer_message,
+        }
 
     return router
